@@ -1,0 +1,108 @@
+[tools]
+dotenvx = "latest"
+jq = "latest"
+bun = "latest"
+gh = "latest"
+lefthook = "latest"
+"github:rin2yh/pumlv" = "latest"
+
+[tasks.dev-all]
+description = "dev-all"
+depends = ["dev-backend", "dev-frontend"]
+
+[tasks.dev-backend]
+description = "dev-backend"
+dir = "backend"
+run = """
+  docker compose up -d
+  mise run dev
+"""
+
+[tasks.dev-frontend]
+description = "dev-frontend"
+dir = "frontend"
+run = """
+  mise run dev
+"""
+
+[tasks.codegen]
+description = "Generate code from openapi.yaml and SQL files"
+run = """
+  mise -C backend run gen
+  mise -C frontend run gen
+  mise -C backend run gen-sql
+"""
+
+[tasks.db-connect]
+description = "db connect"
+dir = "backend"
+run = """
+  docker compose exec -e PGOPTIONS="-c search_path=app" db psql -U postgres -d gym_app
+"""
+
+[tasks.puml]
+description = "Build and start PlantUML server with Japanese font support"
+run = """
+  if ! docker image inspect gym-app/plantuml-server > /dev/null 2>&1; then
+    docker build -f Dockerfile.plantuml -t gym-app/plantuml-server .
+  fi
+  docker run -d -p 8080:8080 --name plantuml-server --rm gym-app/plantuml-server
+"""
+
+[tasks.puml-view]
+description = "Render PlantUML file via server and preview in terminal"
+usage = "arg <file>"
+run = """
+  FILE={{arg(name='file')}}
+  curl -sf "http://localhost:8080/" > /dev/null 2>&1 || { echo "PlantUML server is not running. Start it with: mise run puml"; exit 1; }
+  ENCODED=$(curl -s -D - -o /dev/null -X POST "http://localhost:8080/form" \
+    --data-urlencode "text@$FILE" \
+    | grep -i location | sed 's|.*http://localhost:8080/uml/||' | tr -d '\r')
+  curl -s "http://localhost:8080/png/$ENCODED" | wezterm imgcat
+"""
+
+[tasks.puml-watch]
+description = "Watch PlantUML file and auto-preview on save"
+usage = "arg <file>"
+run = """
+  FILE={{arg(name='file')}}
+  render() {
+    curl -sf "http://localhost:8080/" > /dev/null 2>&1 || { echo "PlantUML server is not running. Start it with: mise run puml"; return; }
+    ENCODED=$(curl -s -D - -o /dev/null -X POST "http://localhost:8080/form" \
+      --data-urlencode "text@$FILE" \
+      | grep -i location | sed 's|.*http://localhost:8080/uml/||' | tr -d '\r')
+    clear
+    curl -s "http://localhost:8080/png/$ENCODED" | wezterm imgcat
+  }
+  render
+  watchexec --watch "$FILE" --on-busy-update do-nothing -- bash -c "$(declare -f render); FILE='$FILE' render"
+"""
+
+[tasks.puml-build]
+description = "Render all .puml files to PNG (for broot preview)"
+run = """
+  echo "Rendering .puml files..."
+  curl -sf "http://localhost:8080/" > /dev/null 2>&1 || { echo "PlantUML server is not running. Start it with: mise run puml"; exit 1; }
+  find docs -name "*.puml" | while read -r FILE; do
+    ENCODED=$(curl -s -D - -o /dev/null -X POST "http://localhost:8080/form" \
+      --data-urlencode "text@$FILE" \
+      | grep -i location | sed 's|.*http://localhost:8080/uml/||' | tr -d '\r')
+    OUT="${FILE%.puml}.png"
+    curl -s "http://localhost:8080/png/$ENCODED" -o "$OUT"
+    echo "generated: $OUT"
+  done
+"""
+
+[tasks.puml-open]
+description = "Open PlantUML file in browser via server"
+usage = "arg <file>"
+run = """
+  FILE={{arg(name='file')}}
+  curl -sf "http://localhost:8080/" > /dev/null 2>&1 || { echo "PlantUML server is not running. Start it with: mise run puml"; exit 1; }
+  ENCODED=$(curl -s -D - -o /dev/null -X POST "http://localhost:8080/form" \
+    --data-urlencode "text@$FILE" \
+    | grep -i location | sed 's|.*http://localhost:8080/uml/||' | tr -d '\r')
+  xdg-open "http://localhost:8080/png/$ENCODED"
+"""
+
+
