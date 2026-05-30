@@ -1,0 +1,15 @@
+{
+  "name": "scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "redocly bundle ../docs/openapi.yaml --ext json -o /tmp/gym_app_openapi.json && bun gen_gleam.ts /tmp/gym_app_openapi.json"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "dependencies": {
+    "@redocly/cli": "latest"
+  }
+}

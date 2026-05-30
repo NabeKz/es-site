@@ -1,0 +1,29 @@
+@startuml reservation_cancel_robustness
+title 予約キャンセル — ロバストネス図
+
+left to right direction
+
+actor 会員 as member
+
+boundary "予約をキャンセルする" as b_cancel
+
+control "予約の存在と所有権を確認する" as c_check
+control "レッスン開始前か確認する"     as c_lesson_check
+control "キャンセルを記録する"         as c_record
+
+entity Reservation         as e_reservation
+entity CancelledReservation as e_cancelled
+entity Lesson              as e_lesson
+
+member --> b_cancel
+b_cancel --> c_check
+b_cancel --> c_lesson_check
+b_cancel --> c_record
+
+c_check --> e_reservation
+c_lesson_check --> e_lesson
+c_record --> e_reservation
+c_record --> e_cancelled
+c_record --> e_lesson
+
+@enduml

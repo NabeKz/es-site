@@ -1,0 +1,24 @@
+meta {
+  name: Create Lesson
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/lessons
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "ヨガ入門",
+    "instructor": "田中先生",
+    "startsAt": "2026-05-10T10:00:00Z",
+    "endsAt": "2026-05-10T11:00:00Z",
+    "capacity": 20,
+    "description": "初心者向けヨガ"
+  }
+  
+  
+}

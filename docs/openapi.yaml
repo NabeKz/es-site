@@ -1,0 +1,328 @@
+openapi: "3.1.0"
+info:
+  title: Gym App API
+  version: "1.0.0"
+
+paths:
+  /auth/signup:
+    post:
+      summary: 会員登録
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthInput"
+      responses:
+        "201":
+          description: 登録した会員
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+  /auth/login:
+    post:
+      summary: ログイン
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthInput"
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+  /auth/logout:
+    post:
+      summary: ログアウト
+      operationId: logout
+      responses:
+        "204":
+          description: ログアウト完了
+  /auth/me:
+    get:
+      summary: 現在のログインユーザー取得
+      operationId: getMe
+      responses:
+        "200":
+          description: ログイン中の会員
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "401":
+          description: 未認証
+  /reservations:
+    post:
+      summary: 予約作成
+      operationId: createReservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReservationInput"
+      responses:
+        "201":
+          description: 作成した予約
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        "401":
+          description: 未認証
+        "404":
+          description: レッスンが存在しない
+        "409":
+          description: 満席または重複予約
+  /reservations/me:
+    get:
+      summary: 自分の予約一覧取得
+      description: ログイン中の会員が持つ予約の一覧を返す
+      operationId: getMyReservations
+      responses:
+        "200":
+          description: 予約一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+        "401":
+          description: 未認証
+  /reservations/{id}:
+    delete:
+      summary: 予約キャンセル
+      operationId: cancelReservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: キャンセル完了
+        "401":
+          description: 未認証
+        "403":
+          description: 他の会員の予約
+        "404":
+          description: 予約が存在しない
+        "409":
+          description: キャンセル期限切れ
+  /lessons:
+    get:
+      summary: レッスン一覧取得
+      description: 開催前（現在日時以降）のレッスンを返す
+      operationId: getLessons
+      parameters:
+        - name: date
+          in: query
+          description: 指定日のレッスンに絞り込む (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: レッスン一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lesson"
+    post:
+      summary: レッスン作成
+      operationId: createLesson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLessonInput"
+      responses:
+        "200":
+          description: 作成したレッスン
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lesson"
+
+components:
+  schemas:
+    AuthInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 8
+
+    Member:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+
+    CreateReservationInput:
+      type: object
+      required:
+        - lesson_id
+      properties:
+        lesson_id:
+          type: string
+          format: uuid
+
+    CreateLessonInput:
+      type: object
+      required:
+        - name
+        - instructor
+        - startsAt
+        - endsAt
+        - capacity
+        - description
+      properties:
+        name:
+          type: string
+          minLength: 1
+        instructor:
+          type: string
+          minLength: 1
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+          minimum: 1
+        description:
+          type: string
+
+    Lesson:
+      type: object
+      required:
+        - id
+        - name
+        - instructor
+        - startsAt
+        - endsAt
+        - capacity
+        - remainingSlots
+        - description
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        instructor:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+        remainingSlots:
+          type: integer
+        description:
+          type: string
+
+    Reservation:
+      type: object
+      required:
+        - id
+        - lessonId
+      properties:
+        id:
+          type: string
+          format: uuid
+        lessonId:
+          type: string
+          format: uuid
+
+    Exercise:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        muscleGroup:
+          type: ["string", "null"]
+
+    WorkoutSet:
+      type: object
+      required:
+        - id
+        - reps
+      properties:
+        id:
+          type: integer
+        reps:
+          type: integer
+        weightKg:
+          type: ["number", "null"]
+
+    WorkoutExercise:
+      type: object
+      required:
+        - id
+        - exercise
+        - sets
+      properties:
+        id:
+          type: integer
+        exercise:
+          $ref: "#/components/schemas/Exercise"
+        sets:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkoutSet"
+
+    Workout:
+      type: object
+      required:
+        - id
+        - date
+        - exercises
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        notes:
+          type: ["string", "null"]
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkoutExercise"
