@@ -1,3 +1,13 @@
 [tools]
 node = "latest"
 pnpm = "latest"
+
+[tasks.gen]
+description = "Generate TypeScript client from openapi.yaml"
+run = "pnpm gen"
+
+[tasks.dev]
+description = "dev"
+run = """
+  pnpm dev
+"""

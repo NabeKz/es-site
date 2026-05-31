@@ -37,16 +37,16 @@ run = """
 description = "db connect"
 dir = "backend"
 run = """
-  docker compose exec -e PGOPTIONS="-c search_path=app" db psql -U postgres -d gym_app
+  docker compose exec -e PGOPTIONS="-c search_path=app" db psql -U postgres -d ec_site
 """
 
 [tasks.puml]
 description = "Build and start PlantUML server with Japanese font support"
 run = """
-  if ! docker image inspect gym-app/plantuml-server > /dev/null 2>&1; then
-    docker build -f Dockerfile.plantuml -t gym-app/plantuml-server .
+  if ! docker image inspect ec-site/plantuml-server > /dev/null 2>&1; then
+    docker build -f Dockerfile.plantuml -t ec-site/plantuml-server .
   fi
-  docker run -d -p 8080:8080 --name plantuml-server --rm gym-app/plantuml-server
+  docker run -d -p 8080:8080 --name plantuml-server --rm ec-site/plantuml-server
 """
 
 [tasks.puml-view]
