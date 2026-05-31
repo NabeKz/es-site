@@ -1,5 +1,6 @@
 ```mermaid
 erDiagram
+    %% Resources
     app_members["app.members"] {
       uuid id PK
       character_varying(255) email
@@ -16,7 +17,6 @@ erDiagram
       uuid id PK
       character_varying(255) name
       integer price
-      integer stock
       text description
     }
     app_cart_items["app.cart_items"] {
@@ -24,6 +24,15 @@ erDiagram
       uuid member_id FK
       uuid product_id FK
       integer quantity
+    }
+
+    %% Events
+    app_stock_movements["app.stock_movements"] {
+      uuid id PK
+      uuid product_id FK
+      integer delta
+      character_varying(32) type
+      timestamp created_at
     }
     app_orders["app.orders"] {
       uuid id PK
@@ -39,11 +48,19 @@ erDiagram
       integer unit_price
       integer quantity
     }
+    app_payments["app.payments"] {
+      uuid id PK
+      uuid order_id FK
+      integer amount
+      timestamp created_at
+    }
 
     app_sessions }o--o| app_members : sessions_member_id_fkey
     app_cart_items }o--o| app_members : cart_items_member_id_fkey
     app_cart_items }o--o| app_products : cart_items_product_id_fkey
+    app_stock_movements }o--o| app_products : stock_movements_product_id_fkey
     app_orders }o--o| app_members : orders_member_id_fkey
     app_order_items }o--o| app_orders : order_items_order_id_fkey
     app_order_items }o--o| app_products : order_items_product_id_fkey
+    app_payments ||--o| app_orders : payments_order_id_fkey
 ```

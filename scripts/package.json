@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "gen": "redocly bundle ../docs/openapi.yaml --ext json -o /tmp/gym_app_openapi.json && bun gen_gleam.ts /tmp/gym_app_openapi.json"
+    "gen": "redocly bundle ../docs/openapi.yaml --ext json -o /tmp/ec_site_openapi.json && bun gen_gleam.ts /tmp/ec_site_openapi.json"
   },
   "devDependencies": {
     "@types/bun": "latest"
