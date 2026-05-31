@@ -1,6 +1,6 @@
 openapi: "3.1.0"
 info:
-  title: Gym App API
+  title: EC Site API
   version: "1.0.0"
 
 paths:
@@ -58,49 +58,83 @@ paths:
                 $ref: "#/components/schemas/Member"
         "401":
           description: 未認証
-  /reservations:
-    post:
-      summary: 予約作成
-      operationId: createReservation
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateReservationInput"
-      responses:
-        "201":
-          description: 作成した予約
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Reservation"
-        "401":
-          description: 未認証
-        "404":
-          description: レッスンが存在しない
-        "409":
-          description: 満席または重複予約
-  /reservations/me:
+
+  /products:
     get:
-      summary: 自分の予約一覧取得
-      description: ログイン中の会員が持つ予約の一覧を返す
-      operationId: getMyReservations
+      summary: 商品一覧取得
+      operationId: getProducts
       responses:
         "200":
-          description: 予約一覧
+          description: 商品一覧
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Reservation"
+                  $ref: "#/components/schemas/Product"
+
+  /admin/products:
+    post:
+      summary: 商品登録（管理者）
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductInput"
+      responses:
+        "201":
+          description: 登録した商品
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
         "401":
           description: 未認証
-  /reservations/{id}:
+
+  /cart/items:
+    get:
+      summary: カート取得
+      operationId: getCartItems
+      responses:
+        "200":
+          description: カート内の商品一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CartItem"
+        "401":
+          description: 未認証
+    post:
+      summary: カートに商品追加
+      operationId: addCartItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCartItemInput"
+      responses:
+        "201":
+          description: 追加したカートアイテム
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartItem"
+        "401":
+          description: 未認証
+        "404":
+          description: 商品が存在しない
+        "409":
+          description: 在庫不足
+
+  /cart/items/{id}:
     delete:
-      summary: 予約キャンセル
-      operationId: cancelReservation
+      summary: カートから商品削除
+      operationId: removeCartItem
       parameters:
         - name: id
           in: path
@@ -110,53 +144,28 @@ paths:
             format: uuid
       responses:
         "204":
-          description: キャンセル完了
+          description: 削除完了
         "401":
           description: 未認証
-        "403":
-          description: 他の会員の予約
         "404":
-          description: 予約が存在しない
-        "409":
-          description: キャンセル期限切れ
-  /lessons:
-    get:
-      summary: レッスン一覧取得
-      description: 開催前（現在日時以降）のレッスンを返す
-      operationId: getLessons
-      parameters:
-        - name: date
-          in: query
-          description: 指定日のレッスンに絞り込む (YYYY-MM-DD)
-          required: false
-          schema:
-            type: string
-            format: date
-      responses:
-        "200":
-          description: レッスン一覧
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Lesson"
+          description: カートアイテムが存在しない
+
+  /orders:
     post:
-      summary: レッスン作成
-      operationId: createLesson
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateLessonInput"
+      summary: 注文確定
+      description: カートの内容で注文を作成し、モック決済を実行する
+      operationId: createOrder
       responses:
-        "200":
-          description: 作成したレッスン
+        "201":
+          description: 作成した注文
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Lesson"
+                $ref: "#/components/schemas/Order"
+        "401":
+          description: 未認証
+        "409":
+          description: 在庫不足または空カート
 
 components:
   schemas:
@@ -185,144 +194,117 @@ components:
         email:
           type: string
 
-    CreateReservationInput:
+    Product:
       type: object
       required:
-        - lesson_id
+        - id
+        - name
+        - price
+        - stock
+        - description
       properties:
-        lesson_id:
+        id:
           type: string
           format: uuid
+        name:
+          type: string
+        price:
+          type: integer
+        stock:
+          type: integer
+        description:
+          type: string
 
-    CreateLessonInput:
+    CreateProductInput:
       type: object
       required:
         - name
-        - instructor
-        - startsAt
-        - endsAt
-        - capacity
+        - price
+        - stock
         - description
       properties:
         name:
           type: string
           minLength: 1
-        instructor:
-          type: string
-          minLength: 1
-        startsAt:
-          type: string
-          format: date-time
-        endsAt:
-          type: string
-          format: date-time
-        capacity:
+        price:
           type: integer
           minimum: 1
+        stock:
+          type: integer
+          minimum: 0
         description:
           type: string
 
-    Lesson:
+    CartItem:
       type: object
       required:
         - id
+        - productId
         - name
-        - instructor
-        - startsAt
-        - endsAt
-        - capacity
-        - remainingSlots
-        - description
+        - price
+        - quantity
       properties:
         id:
+          type: string
+          format: uuid
+        productId:
           type: string
           format: uuid
         name:
           type: string
-        instructor:
-          type: string
-        startsAt:
-          type: string
-          format: date-time
-        endsAt:
-          type: string
-          format: date-time
-        capacity:
+        price:
           type: integer
-        remainingSlots:
+        quantity:
           type: integer
-        description:
-          type: string
 
-    Reservation:
+    AddCartItemInput:
+      type: object
+      required:
+        - productId
+        - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+
+    Order:
       type: object
       required:
         - id
-        - lessonId
+        - items
+        - totalPrice
       properties:
         id:
           type: string
           format: uuid
-        lessonId:
-          type: string
-          format: uuid
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        totalPrice:
+          type: integer
 
-    Exercise:
+    OrderItem:
       type: object
       required:
         - id
+        - productId
         - name
+        - unitPrice
+        - quantity
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
         name:
           type: string
-        muscleGroup:
-          type: ["string", "null"]
-
-    WorkoutSet:
-      type: object
-      required:
-        - id
-        - reps
-      properties:
-        id:
+        unitPrice:
           type: integer
-        reps:
+        quantity:
           type: integer
-        weightKg:
-          type: ["number", "null"]
-
-    WorkoutExercise:
-      type: object
-      required:
-        - id
-        - exercise
-        - sets
-      properties:
-        id:
-          type: integer
-        exercise:
-          $ref: "#/components/schemas/Exercise"
-        sets:
-          type: array
-          items:
-            $ref: "#/components/schemas/WorkoutSet"
-
-    Workout:
-      type: object
-      required:
-        - id
-        - date
-        - exercises
-      properties:
-        id:
-          type: integer
-        date:
-          type: string
-        notes:
-          type: ["string", "null"]
-        exercises:
-          type: array
-          items:
-            $ref: "#/components/schemas/WorkoutExercise"

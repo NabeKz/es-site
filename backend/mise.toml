@@ -1,0 +1,74 @@
+[tools]
+atlas = "latest"
+bun = "latest"
+dotenvx = "latest"
+erlang = "28"
+gleam = "latest"
+rebar = "latest"
+watchexec = "latest"
+
+[env]
+DATABASE_URL = "postgresql://postgres:dev@localhost:5432/gym_app"
+
+[tasks.test]
+description = "Run unit tests"
+run = "gleam test 2>&1 | tee /tmp/test-output.txt"
+
+[tasks.test-summary]
+description = "Output test results as markdown (reads test-results/)"
+run = "bun run scripts/test_summary.ts"
+
+[tasks.gen]
+description = "Generate Gleam types from openapi.yaml"
+dir = "../scripts"
+run = "bun run gen"
+
+[tasks.docker-up]
+hide = true
+run = "docker compose up -d"
+
+[tasks.db-migrate]
+description = "Apply schema to local Docker DB"
+depends = ["docker-up"]
+run = """
+atlas schema apply --env local --auto-approve
+"""
+
+[tasks.gen-sql]
+description = "Generate type-safe Gleam functions from SQL files (requires local DB)"
+depends = ["docker-up"]
+run = """
+  gleam run -m squirrel
+"""
+
+[tasks.dev]
+description = "dev"
+run = """
+  watchexec -w src -r --stop-timeout 0 --stop-signal SIGKILL -- gleam run
+"""
+
+[tasks.db-apply]
+description = "Apply schema to database (declarative migration)"
+run = "atlas schema apply --env local --auto-approve"
+
+[tasks.db-plan]
+description = "Preview schema diff without applying"
+run = "atlas schema apply --env local --dry-run"
+
+[tasks.db-seed]
+description = "Insert seed data via usecase layer"
+depends = ["db-migrate"]
+run = """
+  gleam run -m seed
+"""
+
+[tasks.gen-erd]
+description = "Generate Mermaid ER diagram from schema.hcl"
+run = """
+  echo '```mermaid' > ../docs/erd.md
+  atlas schema inspect \
+    --env local \
+    --format "{% raw %}{{ mermaid . }}{% endraw %}" \
+    >> ../docs/erd.md
+  echo '```' >> ../docs/erd.md
+"""

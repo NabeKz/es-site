@@ -1,32 +1,49 @@
 ```mermaid
 erDiagram
-    app_lessons["app.lessons"] {
-      uuid id PK
-      character_varying(255) name
-      character_varying(255) instructor
-      timestamp starts_at
-      timestamp ends_at
-      integer capacity
-      text description
-    }
     app_members["app.members"] {
       uuid id PK
       character_varying(255) email
       text password_hash
       text salt
     }
-    app_reservations["app.reservations"] {
-      uuid id PK
-      uuid lesson_id FK
-      uuid member_id FK
-    }
-    app_reservations }o--o| app_lessons : reservations_lesson_id_fkey
-    app_reservations }o--o| app_members : reservations_member_id_fkey
     app_sessions["app.sessions"] {
       uuid id PK
       uuid member_id FK
       text token
       timestamp created_at
     }
+    app_products["app.products"] {
+      uuid id PK
+      character_varying(255) name
+      integer price
+      integer stock
+      text description
+    }
+    app_cart_items["app.cart_items"] {
+      uuid id PK
+      uuid member_id FK
+      uuid product_id FK
+      integer quantity
+    }
+    app_orders["app.orders"] {
+      uuid id PK
+      uuid member_id FK
+      integer total_price
+      timestamp created_at
+    }
+    app_order_items["app.order_items"] {
+      uuid id PK
+      uuid order_id FK
+      uuid product_id FK
+      character_varying(255) name
+      integer unit_price
+      integer quantity
+    }
+
     app_sessions }o--o| app_members : sessions_member_id_fkey
+    app_cart_items }o--o| app_members : cart_items_member_id_fkey
+    app_cart_items }o--o| app_products : cart_items_product_id_fkey
+    app_orders }o--o| app_members : orders_member_id_fkey
+    app_order_items }o--o| app_orders : order_items_order_id_fkey
+    app_order_items }o--o| app_products : order_items_product_id_fkey
 ```
