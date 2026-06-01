@@ -9,7 +9,7 @@ pub type FetchCartItems =
   fn(Uuid) -> Result(List(CartItem), String)
 
 pub type SaveOrder =
-  fn(Order) -> Result(Order, String)
+  fn(Uuid, Order) -> Result(Order, String)
 
 pub type Create =
   fn(Uuid) -> Result(Order, String)
@@ -26,7 +26,7 @@ pub fn create(fetch_items: FetchCartItems, save: SaveOrder) -> Create {
             acc + item.unit_price * item.quantity
           })
         let order = Order(id: uuid.v4(), items: order_items, total_price:)
-        save(order)
+        save(member_id, order)
       }
     }
   }

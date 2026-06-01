@@ -29,7 +29,7 @@ fn fixture_cart_items() -> List(CartItem) {
 pub fn create_order_success_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Ok(fixture_cart_items()) }
-  let save = fn(order: Order) { Ok(order) }
+  let save = fn(_: Uuid, order: Order) { Ok(order) }
   let assert Ok(order) = command.create(fetch_items, save)(member_id)
   order.total_price |> should.equal(2500)
   list.length(order.items) |> should.equal(2)
@@ -39,7 +39,7 @@ pub fn create_order_success_test() {
 pub fn create_order_snapshots_unit_price_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Ok(fixture_cart_items()) }
-  let save = fn(order: Order) { Ok(order) }
+  let save = fn(_: Uuid, order: Order) { Ok(order) }
   let assert Ok(order) = command.create(fetch_items, save)(member_id)
   let assert Ok(first) = list.first(order.items)
   first.unit_price |> should.equal(1000)
@@ -50,7 +50,7 @@ pub fn create_order_snapshots_unit_price_test() {
 pub fn create_order_empty_cart_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Ok([]) }
-  let save = fn(order: Order) { Ok(order) }
+  let save = fn(_: Uuid, order: Order) { Ok(order) }
   command.create(fetch_items, save)(member_id) |> should.be_error
 }
 
@@ -58,7 +58,7 @@ pub fn create_order_empty_cart_test() {
 pub fn create_order_fetch_error_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Error("db error") }
-  let save = fn(order: Order) { Ok(order) }
+  let save = fn(_: Uuid, order: Order) { Ok(order) }
   command.create(fetch_items, save)(member_id) |> should.be_error
 }
 
@@ -66,6 +66,6 @@ pub fn create_order_fetch_error_test() {
 pub fn create_order_save_error_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Ok(fixture_cart_items()) }
-  let save = fn(_: Order) { Error("db error") }
+  let save = fn(_: Uuid, _: Order) { Error("db error") }
   command.create(fetch_items, save)(member_id) |> should.be_error
 }

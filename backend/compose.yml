@@ -4,6 +4,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: dev
-      POSTGRES_DB: gym_app
+      POSTGRES_DB: ec_site
     ports:
-      - "5432:5432"
+      - "5433:5432"

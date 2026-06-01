@@ -8,7 +8,7 @@ rebar = "latest"
 watchexec = "latest"
 
 [env]
-DATABASE_URL = "postgresql://postgres:dev@localhost:5432/ec_site"
+DATABASE_URL = "postgresql://postgres:dev@localhost:5433/ec_site"
 
 [tasks.test]
 description = "Run unit tests"
