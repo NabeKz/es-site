@@ -19,16 +19,22 @@ pub type FindCartItem =
   fn(Uuid, Uuid) -> Result(Option(CartItem), String)
 
 pub type SaveCartItem =
-  fn(CartItem) -> Result(CartItem, String)
+  fn(Uuid, CartItem) -> Result(CartItem, String)
 
 pub type UpdateCartItem =
   fn(Uuid, Int) -> Result(CartItem, String)
+
+pub type DeleteCartItem =
+  fn(Uuid) -> Result(Nil, String)
 
 pub type Create =
   fn(Uuid, ValidAddCartItemInput) -> Result(CartItem, String)
 
 pub type Update =
   fn(Uuid, ValidUpdateCartItemInput) -> Result(CartItem, String)
+
+pub type Delete =
+  fn(Uuid) -> Result(Nil, String)
 
 pub fn validate(input: AddCartItemInput) -> Result(ValidAddCartItemInput, List(String)) {
   let errors = []
@@ -67,7 +73,7 @@ pub fn create(
             price: 0,
             quantity:,
           )
-        save(item)
+        save(member_id, item)
       }
     }
   }
@@ -78,5 +84,9 @@ pub fn update(update_item: UpdateCartItem) -> Update {
     let ValidUpdateCartItemInput(quantity) = input
     update_item(id, quantity)
   }
+}
+
+pub fn delete(delete_item: DeleteCartItem) -> Delete {
+  delete_item
 }
 

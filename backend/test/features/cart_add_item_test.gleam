@@ -27,7 +27,7 @@ pub fn add_cart_item_out_of_stock_test() {
   let assert Ok(valid) = command.validate(input)
   let find_stock = fn(_) { Ok(0) }
   let find_cart_item = fn(_, _) { Ok(option.None) }
-  let save = fn(item: CartItem) { Ok(item) }
+  let save = fn(_, item: CartItem) { Ok(item) }
 
   command.create(save, find_stock, find_cart_item)(uuid.v4(), valid)
   |> should.be_error
@@ -39,7 +39,7 @@ pub fn add_cart_item_duplicate_test() {
   let assert Ok(valid) = command.validate(input)
   let find_stock = fn(_) { Ok(10) }
   let find_cart_item = fn(_, _) { Ok(option.Some(fixture_cart_item(input))) }
-  let save = fn(item: CartItem) { Ok(item) }
+  let save = fn(_, item: CartItem) { Ok(item) }
 
   command.create(save, find_stock, find_cart_item)(uuid.v4(), valid)
   |> should.be_error
@@ -50,7 +50,7 @@ pub fn add_cart_item_adaptor_error_test() {
   let assert Ok(valid) = command.validate(fixture_input())
   let find_stock = fn(_) { Ok(10) }
   let find_cart_item = fn(_, _) { Ok(option.None) }
-  let save = fn(_: CartItem) { Error("db error") }
+  let save = fn(_, _: CartItem) { Error("db error") }
 
   command.create(save, find_stock, find_cart_item)(uuid.v4(), valid)
   |> should.be_error

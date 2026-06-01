@@ -87,6 +87,50 @@ WHERE product_id = $1
   |> pog.execute(db)
 }
 
+/// A row you get from running the `list_products` query
+/// defined in `./src/features/products/sql/list_products.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type ListProductsRow {
+  ListProductsRow(
+    id: Uuid,
+    name: String,
+    price: Int,
+    stock: Int,
+    description: String,
+  )
+}
+
+/// Runs the `list_products` query
+/// defined in `./src/features/products/sql/list_products.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn list_products(
+  db: pog.Connection,
+) -> Result(pog.Returned(ListProductsRow), pog.QueryError) {
+  let decoder = {
+    use id <- decode.field(0, uuid_decoder())
+    use name <- decode.field(1, decode.string)
+    use price <- decode.field(2, decode.int)
+    use stock <- decode.field(3, decode.int)
+    use description <- decode.field(4, decode.string)
+    decode.success(ListProductsRow(id:, name:, price:, stock:, description:))
+  }
+
+  "SELECT p.id, p.name, p.price, COALESCE(SUM(sm.delta), 0)::int AS stock, p.description
+FROM app.products p
+LEFT JOIN app.stock_movements sm ON p.id = sm.product_id
+GROUP BY p.id
+"
+  |> pog.query
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
 // --- Encoding/decoding utils -------------------------------------------------
 
 /// A decoder to decode `Uuid`s coming from a Postgres query.
