@@ -23,5 +23,6 @@ pub fn create_product_adaptor_error_test() {
 
 // test: 価格の上限を超えたらエラー
 pub fn create_product_price_too_high_test() {
-  todo
+  let input = CreateProductInput(..fixture_input(), price: 100_001)
+  command.validate(input) |> should.be_error
 }
