@@ -132,6 +132,35 @@ paths:
           description: 在庫不足
 
   /cart/items/{id}:
+    patch:
+      summary: カートアイテムの数量変更
+      operationId: updateCartItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCartItemInput"
+      responses:
+        "200":
+          description: 更新したカートアイテム
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartItem"
+        "401":
+          description: 未認証
+        "404":
+          description: カートアイテムが存在しない
+        "409":
+          description: 在庫不足
     delete:
       summary: カートから商品削除
       operationId: removeCartItem
@@ -266,6 +295,15 @@ components:
         productId:
           type: string
           format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+
+    UpdateCartItemInput:
+      type: object
+      required:
+        - quantity
+      properties:
         quantity:
           type: integer
           minimum: 1

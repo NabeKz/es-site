@@ -65,6 +65,21 @@ fn decode_add_cart_item_input(value: Dynamic) -> Result(AddCartItemInput, List(d
   })
 }
 
+pub type UpdateCartItemInput {
+  UpdateCartItemInput(
+    quantity: Int,
+  )
+}
+
+fn decode_update_cart_item_input(value: Dynamic) -> Result(UpdateCartItemInput, List(decode.DecodeError)) {
+  decode.run(value, {
+    use quantity <- decode.field("quantity", decode.int)
+    decode.success(UpdateCartItemInput(
+      quantity:,
+    ))
+  })
+}
+
 fn validate_auth_input(input: AuthInput) -> Result(AuthInput, List(String)) {
   let errors =
     []
@@ -116,6 +131,23 @@ pub fn parse_add_cart_item_input(value: Dynamic) -> Result(AddCartItemInput, Lis
   case decode_add_cart_item_input(value) {
     Error(_) -> Error(["invalid request body"])
     Ok(input) -> validate_add_cart_item_input(input)
+  }
+}
+
+fn validate_update_cart_item_input(input: UpdateCartItemInput) -> Result(UpdateCartItemInput, List(String)) {
+  let errors =
+    []
+    |> check_min_int("quantity", input.quantity, 1)
+  case errors {
+    [] -> Ok(input)
+    _ -> Error(errors)
+  }
+}
+
+pub fn parse_update_cart_item_input(value: Dynamic) -> Result(UpdateCartItemInput, List(String)) {
+  case decode_update_cart_item_input(value) {
+    Error(_) -> Error(["invalid request body"])
+    Ok(input) -> validate_update_cart_item_input(input)
   }
 }
 
