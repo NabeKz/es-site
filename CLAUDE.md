@@ -4,11 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 概要
 
-**スポーツジム予約管理システム**のモノレポ。スタッフがレッスンスケジュールを登録し、会員がレッスン一覧確認・予約・キャンセルを行う。
+EC サイトのモノレポ。バックエンドは **Gleam (Erlang/OTP)** + **Wisp** フレームワーク、フロントエンドは **React 19** + **TanStack Router** + **Panda CSS** で構成される。
 
-バックエンドは **Gleam (Erlang/OTP)** + **Wisp** フレームワーク、フロントエンドは **React 19** + **TanStack Router** + **Panda CSS** で構成される。
-
-設計方針の詳細は `.claude/rules/` を参照。ユースケースと要件は `docs/requirements.md` に定義されている。
+設計方針の詳細は `.claude/rules/` を参照。
 
 ## 開発コマンド
 
@@ -72,13 +70,10 @@ mise run db-connect                # psql で DB に接続（app スキーマ）
 
 ### PlantUML ドキュメント
 
-`docs/` に `.puml` 設計ドキュメントがある。WezTerm 上でプレビューできる。
+`docs/` に `.puml` 設計ドキュメントがある。`pumlv` で Docker なしにプレビューできる。
 
 ```sh
-mise run puml                          # PlantUML サーバー起動（Docker、port 8080）
-mise run puml-view docs/foo.puml       # 指定ファイルをターミナルでプレビュー
-mise run puml-watch docs/foo.puml      # 保存のたびに自動プレビュー
-mise run puml-build                    # 全 .puml を PNG に変換
+pumlv docs/foo.puml   # 指定ファイルをプレビュー
 ```
 
 ## アーキテクチャ
