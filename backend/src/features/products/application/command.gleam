@@ -13,12 +13,17 @@ pub type Create =
   fn(ValidProductInput) -> Result(Product, String)
 
 pub fn validate(input: CreateProductInput) -> Result(ValidProductInput, List(String)) {
-  Ok(ValidProductInput(
-    name: input.name,
-    price: input.price,
-    stock: input.stock,
-    description: input.description,
-  ))
+  let errors = []
+  case errors {
+    [] ->
+      Ok(ValidProductInput(
+        name: input.name,
+        price: input.price,
+        stock: input.stock,
+        description: input.description,
+      ))
+    _ -> Error(errors)
+  }
 }
 
 pub fn create(save: SaveProduct) -> Create {

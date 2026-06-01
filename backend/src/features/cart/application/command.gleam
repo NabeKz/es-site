@@ -31,14 +31,19 @@ pub type Update =
   fn(Uuid, ValidUpdateCartItemInput) -> Result(CartItem, String)
 
 pub fn validate(input: AddCartItemInput) -> Result(ValidAddCartItemInput, List(String)) {
-  Ok(ValidAddCartItemInput(
-    product_id: input.product_id,
-    quantity: input.quantity,
-  ))
+  let errors = []
+  case errors {
+    [] -> Ok(ValidAddCartItemInput(product_id: input.product_id, quantity: input.quantity))
+    _ -> Error(errors)
+  }
 }
 
 pub fn validate_update(input: UpdateCartItemInput) -> Result(ValidUpdateCartItemInput, List(String)) {
-  Ok(ValidUpdateCartItemInput(quantity: input.quantity))
+  let errors = []
+  case errors {
+    [] -> Ok(ValidUpdateCartItemInput(quantity: input.quantity))
+    _ -> Error(errors)
+  }
 }
 
 pub fn create(
