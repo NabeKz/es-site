@@ -1,0 +1,6 @@
+# Terraform のローカル作業ファイル（state は機密が入りうるのでコミットしない）
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# .terraform.lock.hcl は再現性のためコミットする（無視しない）
