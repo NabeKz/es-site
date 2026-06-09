@@ -3,4 +3,7 @@
 *.tfstate
 *.tfstate.*
 
+# 変数ファイル（DATABASE_URL など機密が入るのでコミットしない）
+*.tfvars
+
 # .terraform.lock.hcl は再現性のためコミットする（無視しない）
