@@ -108,3 +108,8 @@ run = """
 """
 
 
+[tasks.tf]
+description = "terraform"
+dir = "infra"
+usage = "arg <cmd>"
+run = "terraform {{arg(name='cmd')}}"
