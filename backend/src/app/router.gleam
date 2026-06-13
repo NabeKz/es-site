@@ -13,6 +13,7 @@ pub fn handle_request(handlers: handlers.Handlers) {
     use req <- middleware(req)
 
     case wisp.path_segments(req) {
+      ["health"] -> wisp.ok()
       ["auth", ..path] -> req |> auth_routes(path, handlers.auth)
       ["products", ..path] -> req |> product_routes(path, handlers.products)
       ["cart", ..path] -> req |> cart_routes(path, handlers.cart)
