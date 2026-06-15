@@ -18,9 +18,13 @@ resource "aws_ecs_task_definition" "service" {
       portMappings = [
         { containerPort = 8000 }
       ]
-      environment = [
-        { name = "DATABASE_URL", value = var.database_url }
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "arn:aws:ssm:ap-northeast-1:716860764656:parameter/ec-site/database_url"
+        }
       ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
