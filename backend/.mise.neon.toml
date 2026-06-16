@@ -1,0 +1,19 @@
+# Overlay loaded when MISE_ENV=neon (e.g. `mise -E neon run db-apply`).
+# Overrides db tasks to target the Neon DB, pulling DATABASE_URL from SSM at
+# run time so the secret never lives in a config file or shell history.
+
+[tasks.db-apply]
+description = "Apply schema to Neon (DATABASE_URL from SSM)"
+run = """
+  DATABASE_URL="$(aws ssm get-parameter --name /ec-site/database_url --with-decryption --region ap-northeast-1 --query 'Parameter.Value' --output text)" \
+  DEV_DATABASE_URL="docker://postgres/17/dev" \
+  atlas schema apply --env neon --auto-approve
+"""
+
+[tasks.db-plan]
+description = "Preview schema diff on Neon (DATABASE_URL from SSM)"
+run = """
+  DATABASE_URL="$(aws ssm get-parameter --name /ec-site/database_url --with-decryption --region ap-northeast-1 --query 'Parameter.Value' --output text)" \
+  DEV_DATABASE_URL="docker://postgres/17/dev" \
+  atlas schema apply --env neon --dry-run
+"""

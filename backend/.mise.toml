@@ -38,11 +38,11 @@ depends = ["docker-up"]
 run = "atlas schema apply --env local --auto-approve"
 
 [tasks.db-apply]
-description = "Apply schema to database (declarative migration)"
+description = "Apply schema to local DB (use -E neon to target Neon)"
 run = "atlas schema apply --env local --auto-approve"
 
 [tasks.db-plan]
-description = "Preview schema diff without applying"
+description = "Preview schema diff on local DB (use -E neon to target Neon)"
 run = "atlas schema apply --env local --dry-run"
 
 [tasks.db-seed]
