@@ -53,9 +53,9 @@ run = """
 
 [tasks.puml-view]
 description = "Render PlantUML file via server and preview in terminal"
-usage = "arg <file>"
+usage = 'arg "<file>"'
 run = """
-  FILE={{arg(name='file')}}
+  FILE=$usage_file
   curl -sf "http://localhost:8080/" > /dev/null 2>&1 || { echo "PlantUML server is not running. Start it with: mise run puml"; exit 1; }
   ENCODED=$(curl -s -D - -o /dev/null -X POST "http://localhost:8080/form" \
     --data-urlencode "text@$FILE" \
@@ -65,9 +65,9 @@ run = """
 
 [tasks.puml-watch]
 description = "Watch PlantUML file and auto-preview on save"
-usage = "arg <file>"
+usage = 'arg "<file>"'
 run = """
-  FILE={{arg(name='file')}}
+  FILE=$usage_file
   render() {
     curl -sf "http://localhost:8080/" > /dev/null 2>&1 || { echo "PlantUML server is not running. Start it with: mise run puml"; return; }
     ENCODED=$(curl -s -D - -o /dev/null -X POST "http://localhost:8080/form" \
@@ -97,9 +97,9 @@ run = """
 
 [tasks.puml-open]
 description = "Open PlantUML file in browser via server"
-usage = "arg <file>"
+usage = 'arg "<file>"'
 run = """
-  FILE={{arg(name='file')}}
+  FILE=$usage_file
   curl -sf "http://localhost:8080/" > /dev/null 2>&1 || { echo "PlantUML server is not running. Start it with: mise run puml"; exit 1; }
   ENCODED=$(curl -s -D - -o /dev/null -X POST "http://localhost:8080/form" \
     --data-urlencode "text@$FILE" \
@@ -111,5 +111,20 @@ run = """
 [tasks.tf]
 description = "terraform"
 dir = "infra"
-usage = "arg <cmd>"
-run = "terraform {{arg(name='cmd')}}"
+usage = 'arg "<cmd>" var=#true'
+run = "terraform $usage_cmd"
+
+[tasks.ecr-push]
+description = "Build backend image and push to ECR (requires ECR repo to exist)"
+dir = "backend"
+run = """
+  REGION=ap-northeast-1
+  REPO=$(aws ecr describe-repositories --repository-name ec-site-backend --region "$REGION" --query 'repositories[0].repositoryUri' --output text)
+  docker build -t "$REPO:latest" .
+  aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "${REPO%%/*}"
+  docker push "$REPO:latest"
+"""
+
+[tasks.ecs-deploy]
+description = "Force a new ECS deployment to pick up the latest image"
+run = "aws ecs update-service --cluster ec-site --service backend_esc_service --force-new-deployment --region ap-northeast-1"
