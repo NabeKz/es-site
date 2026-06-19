@@ -1,0 +1,36 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+
+# OIDC で AWS の一時クレデンシャルを取得するために id-token: write が必須。
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-1
+  ECR_REPO: ec-site-backend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::716860764656:role/ec-site-github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE="$REGISTRY/$ECR_REPO"
+          docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" backend/
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
