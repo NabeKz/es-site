@@ -3,7 +3,6 @@ name: deploy
 on:
   workflow_dispatch:
 
-# OIDC で AWS の一時クレデンシャルを取得するために id-token: write が必須。
 permissions:
   id-token: write
   contents: read
@@ -11,10 +10,12 @@ permissions:
 env:
   AWS_REGION: ap-northeast-1
   ECR_REPO: ec-site-backend
+  ECS_CLUSTER: ec-site
+  ECS_SERVICE: backend_esc_service
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v7
 
@@ -34,3 +35,16 @@ jobs:
           docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" backend/
           docker push "$IMAGE:${{ github.sha }}"
           docker push "$IMAGE:latest"
+
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --force-new-deployment
+
+      - name: Wait for deployment to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE"

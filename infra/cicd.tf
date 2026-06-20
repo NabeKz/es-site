@@ -60,3 +60,19 @@ resource "aws_iam_role_policy" "github_actions_ecr" {
     ]
   })
 }
+
+resource "aws_iam_role_policy" "github_actions_ecs_deploy" {
+  name = "ecs-deploy"
+  role = aws_iam_role.github_actions.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid      = "EcsDeploy"
+        Effect   = "Allow"
+        Action   = ["ecs:UpdateService"]
+        Resource = aws_ecs_service.backend.id
+      }
+    ]
+  })
+}
