@@ -23,7 +23,9 @@ resource "aws_iam_role" "github_actions" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:NabeKz/es-site:ref:refs/heads/main"
+            # environment を付けたジョブの OIDC sub は environment スコープになる。
+            # main ブランチ縛りより強く、production 環境を通った実行のみに限定する。
+            "token.actions.githubusercontent.com:sub" = "repo:NabeKz/es-site:environment:production"
           }
         }
       }
@@ -70,7 +72,7 @@ resource "aws_iam_role_policy" "github_actions_ecs_deploy" {
       {
         Sid      = "EcsDeploy"
         Effect   = "Allow"
-        Action   = ["ecs:UpdateService"]
+        Action   = ["ecs:UpdateService", "ecs:DescribeServices"]
         Resource = aws_ecs_service.backend.id
       }
     ]
