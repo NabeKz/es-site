@@ -7,6 +7,7 @@ lefthook = "latest"
 "github:rin2yh/pumlv" = "latest"
 aws = { version = "latest", symlink_bins = "true" }
 terraform = "latest"
+actionlint = "latest"
 
 [tasks.dev-all]
 description = "dev-all"
