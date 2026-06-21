@@ -69,3 +69,28 @@ pub fn create_order_save_error_test() {
   let save = fn(_: Uuid, _: Order) { Error("db error") }
   command.create(fetch_items, save)(member_id) |> should.be_error
 }
+
+// test: 在庫不足のとき注文できない（UC-6 例外）
+pub fn create_order_out_of_stock_test() {
+  todo
+  // いずれかの商品で 数量 > 在庫 → エラー（409）。
+  // command.create が在庫を算出する依存（find_stock 系）を受け取る形へ要変更
+}
+
+// test: 注文確定で在庫が減る（UC-6 手順5）
+pub fn create_order_records_stock_movement_test() {
+  todo
+  // 注文した数量ぶんの負の stock_movement（type=order）が記録される
+}
+
+// test: 注文確定でモック決済が記録される（UC-6 手順6）
+pub fn create_order_records_payment_test() {
+  todo
+  // total_price と同額の payments レコードが作成される
+}
+
+// test: 注文後にカートが空になる（UC-6 手順7）
+pub fn create_order_clears_cart_test() {
+  todo
+  // 注文確定後、当該会員のカートアイテムが削除される
+}

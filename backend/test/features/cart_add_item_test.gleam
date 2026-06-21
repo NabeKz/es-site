@@ -55,3 +55,10 @@ pub fn add_cart_item_adaptor_error_test() {
   command.create(save, find_stock, find_cart_item)(uuid.v4(), valid)
   |> should.be_error
 }
+
+// test: 在庫数を超える数量は追加できない（UC-3 例外）
+pub fn add_cart_item_exceeds_stock_test() {
+  todo
+  // 数量 > 在庫 のときエラー。現状は stock == 0 しか弾かず、
+  // 在庫1に対して数量5でも通ってしまう
+}
