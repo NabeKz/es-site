@@ -1,0 +1,42 @@
+@startuml usecase
+' ユースケース図（usecase.md の UC-1〜6 と対応）
+' プレビュー: pumlv docs/usecase.puml
+' 認証は方式中立な「ログインする」に集約し差し替え可能にする（.claude/rules/robustness.md）
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor 管理者 as admin
+actor 顧客 as customer
+
+rectangle "EC サイト" {
+  usecase "会員登録する" as signup
+  usecase "ログインする（認証）" as login
+  usecase "(UC-1) 商品を登録する" as uc1
+  usecase "(UC-2) 商品一覧を見る" as uc2
+  usecase "(UC-3) 商品をカートに追加する" as uc3
+  usecase "(UC-4) カートの数量を変更する" as uc4
+  usecase "(UC-5) カートから商品を削除する" as uc5
+  usecase "(UC-6) 注文を確定する" as uc6
+}
+
+admin --> login
+admin --> uc1
+
+customer --> signup
+customer --> login
+customer --> uc2
+customer --> uc3
+customer --> uc4
+customer --> uc5
+customer --> uc6
+
+' 認証が前提のユースケース（ログインを先に通す必要がある）
+uc1 ..> login : <<precedes>>
+uc3 ..> login : <<precedes>>
+uc4 ..> login : <<precedes>>
+uc5 ..> login : <<precedes>>
+uc6 ..> login : <<precedes>>
+
+@enduml
