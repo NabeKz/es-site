@@ -48,7 +48,7 @@ resource "aws_iam_role_policy" "github_actions_ecr" {
         Resource = "*"
       },
       {
-        Sid    = "EcrPush"
+        Sid    = "EcrPushPull"
         Effect = "Allow"
         Action = [
           "ecr:BatchCheckLayerAvailability",
@@ -56,6 +56,9 @@ resource "aws_iam_role_policy" "github_actions_ecr" {
           "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload",
           "ecr:PutImage",
+          # buildx の cache-from がキャッシュイメージ（:buildcache）を読むのに必要。
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
         ]
         Resource = aws_ecr_repository.backend.arn
       }

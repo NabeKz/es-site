@@ -28,14 +28,22 @@ jobs:
       - id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # docker-container driver を使う buildx を用意する。
+      # 標準の docker driver はレジストリキャッシュのエクスポートに非対応。
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           IMAGE="$REGISTRY/$ECR_REPO"
-          docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" backend/
-          docker push "$IMAGE:${{ github.sha }}"
-          docker push "$IMAGE:latest"
+          docker buildx build backend/ \
+            --tag "$IMAGE:${{ github.sha }}" \
+            --tag "$IMAGE:latest" \
+            --cache-from "type=registry,ref=$IMAGE:buildcache" \
+            --cache-to "type=registry,ref=$IMAGE:buildcache,mode=max,image-manifest=true,oci-mediatypes=true" \
+            --push
 
       - name: Deploy to ECS
         run: |
