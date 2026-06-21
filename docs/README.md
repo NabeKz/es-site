@@ -51,7 +51,5 @@ flowchart TD
 
 ## 編集のルール
 
-- **手書きの起点を直す**: 仕様変更は `requirements.md` / `usecase.md`、API 変更は `openapi.yaml`、DB 変更は `schema.hcl` を先に直す
-- **生成物は直さない**: `erd.md` / `generated/` / `sql.gleam` は生成物。元を直して再生成する（`mise run codegen`・`gen-erd`）
-- **現状の実装ステータス（抜け・TODO）はここに書かない**: ドキュメントは「あるべき仕様」を保つ。未達は `todo` テストで可視化する（`.claude/rules/testing.md`）
+書き方・維持の方針は `CLAUDE.md`（「ドキュメントの編集ルール」「図ツール」）を参照。新しいドキュメントを足したら上記の一覧表と関係図を更新する。
 </content>

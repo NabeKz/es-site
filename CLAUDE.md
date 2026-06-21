@@ -52,8 +52,18 @@ cd backend && mise run gen-sql
 - `backend/src/generated/` — OpenAPI から生成した Gleam 型・バリデーション・エンコーダー
 - `frontend/src/shared/generated/` — OpenAPI から生成した TypeScript fetch クライアント
 - `backend/src/features/**/sql.gleam` — SQL ファイルから squirrel が生成した型安全クエリ関数
+- `docs/erd.md` — `backend/db/schema.hcl` から生成した ER 図（`cd backend && mise run gen-erd`）
 
 スキーマ変更は `docs/openapi.yaml` → `mise run codegen`、DB スキーマ変更は `backend/db/schema.hcl` → `mise run db-apply` の順で行う。
+
+### ドキュメントの編集ルール
+
+ドキュメントは「手書きの起点」と「生成物」を区別する。
+
+- **手書きの起点（直接編集する）**: 仕様は `docs/requirements.md` / `docs/usecase.md`、API は `docs/openapi.yaml`、DB は `backend/db/schema.hcl`
+- **生成物（編集禁止・再生成する）**: `docs/erd.md` / `generated/` / `sql.gleam`
+- ドキュメントには「あるべき仕様」だけを書き、実装ステータス（抜け・TODO）は混ぜない。未達は `todo` テストで可視化する（`.claude/rules/testing.md`）
+- ドキュメント同士の関係は `docs/README.md`（ドキュメントの地図）に集約する
 
 ### ローカル DB（SQL コード生成用）
 
@@ -68,13 +78,15 @@ mise run db-connect                # psql で DB に接続（app スキーマ）
 
 スキーマ差分の確認は `cd backend && mise run db-plan`、本番・開発 DB（Neon）への適用は `cd backend && mise run db-apply`。
 
-### PlantUML ドキュメント
+### 図ツール
 
-`docs/` に `.puml` 設計ドキュメントがある。`pumlv` で Docker なしにプレビューできる。
+| 図 | ツール |
+|----|--------|
+| 構成図（インフラ・アーキテクチャ） | drawio（`.drawio`。SVG 書き出しは web の app.diagrams.net） |
+| ユースケース図・シーケンス図 | PlantUML（`.puml`。`pumlv docs/foo.puml` でプレビュー） |
+| ER 図 | Mermaid（`schema.hcl` から `mise run gen-erd` で生成・手書きしない） |
 
-```sh
-pumlv docs/foo.puml   # 指定ファイルをプレビュー
-```
+自動レイアウトの PlantUML/Mermaid は二次元自由配置の構成図に弱いので、構成図は drawio を使う。
 
 ## アーキテクチャ
 
