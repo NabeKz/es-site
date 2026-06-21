@@ -17,6 +17,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     environment: production
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
