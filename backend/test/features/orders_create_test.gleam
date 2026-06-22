@@ -70,27 +70,35 @@ pub fn create_order_save_error_test() {
   command.create(fetch_items, save)(member_id) |> should.be_error
 }
 
-// test: 在庫不足のとき注文できない（UC-6 例外）
-pub fn create_order_out_of_stock_test() {
+// --- 以下はサーガ設計（UC-6: 受付 → 在庫引き当て・決済 → 確定 / 失敗時は補償）の観点。
+//     実装フェーズで上の同期版テストをこの形に再構成する ---
+
+// test: 注文を受け付けると「受付」状態になる（UC-6 受付）
+pub fn accept_order_marks_pending_test() {
   todo
-  // いずれかの商品で 数量 > 在庫 → エラー（409）。
-  // command.create が在庫を算出する依存（find_stock 系）を受け取る形へ要変更
+  // カートに商品があれば注文を受け付け、状態が「受付」になる
 }
 
-// test: 注文確定で在庫が減る（UC-6 手順5）
-pub fn create_order_records_stock_movement_test() {
+// test: 在庫を引き当てるとき同じ商品を売り越さない（UC-6 手順4）
+pub fn allocate_stock_prevents_overselling_test() {
   todo
-  // 注文した数量ぶんの負の stock_movement（type=order）が記録される
+  // 在庫が注文数を満たせば引き当て成功、満たさなければ失敗する（単一集約の不変条件）
 }
 
-// test: 注文確定でモック決済が記録される（UC-6 手順6）
-pub fn create_order_records_payment_test() {
+// test: 在庫が足りないとき注文を取り消す（UC-6 補償）
+pub fn order_canceled_when_stock_insufficient_test() {
   todo
-  // total_price と同額の payments レコードが作成される
+  // 引き当てに失敗したら注文の状態が「取消」になる
 }
 
-// test: 注文後にカートが空になる（UC-6 手順7）
-pub fn create_order_clears_cart_test() {
+// test: 決済が失敗したら引き当てた在庫を戻して注文を取り消す（UC-6 補償）
+pub fn order_canceled_and_stock_returned_when_payment_fails_test() {
   todo
-  // 注文確定後、当該会員のカートアイテムが削除される
+  // 決済失敗時、引き当てた在庫を戻し、注文の状態が「取消」になる
+}
+
+// test: 在庫引き当てと決済が完了すると注文が確定しカートが空になる（UC-6 手順5・6）
+pub fn order_confirmed_and_cart_cleared_on_success_test() {
+  todo
+  // 引き当てと決済が成功したら注文の状態が「確定」になり、カートが空になる
 }
