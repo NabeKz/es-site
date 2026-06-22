@@ -1,6 +1,6 @@
 # 集約設計と整合性
 
-参考: https://zenn.dev/j5ik2o/articles/59de072b6728ff
+参考: [複数集約を跨ぐ処理を1つのDBトランザクションで括る前に読む記事（j5ik2o / かとじゅん）](https://zenn.dev/j5ik2o/articles/59de072b6728ff)
 
 ## 強整合と弱整合
 
