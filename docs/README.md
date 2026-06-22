@@ -10,6 +10,7 @@ flowchart TD
     req["requirements.md<br/>要件・ユーザーストーリー<br/>(手書き・起点)"]
     uc["usecase.md<br/>ユースケース記述<br/>(手書き)"]
     uc_puml["usecase.puml<br/>ユースケース図<br/>(手書き・PlantUML)"]
+    wf["workflow.md<br/>ワークフロー記述<br/>(手書き)"]
 
     api["openapi.yaml<br/>API 定義<br/>(手書き・信頼できる唯一のソース)"]
     schema["backend/db/schema.hcl<br/>DB スキーマ<br/>(手書き・信頼できる唯一のソース)"]
@@ -22,6 +23,7 @@ flowchart TD
 
     req --> uc
     uc --> uc_puml
+    uc -->|起動| wf
     uc --> api
     uc --> schema
 
@@ -44,6 +46,7 @@ flowchart TD
 | `requirements.md` | 要件・ユーザーストーリー・ビジネスルール・スコープ | 手書き（起点） | → `usecase.md` |
 | `usecase.md` | ユースケース記述（基本/例外フロー・事後条件） | 手書き | `requirements.md` → `openapi.yaml` / `schema.hcl` |
 | `usecase.puml` | ユースケース図（アクターと UC の関係） | 手書き（PlantUML） | `usecase.md` に追従 |
+| `workflow.md` | ワークフロー記述（複数集約をまたぐ非同期処理・サーガ） | 手書き | `usecase.md`（起動）に対応 |
 | `openapi.yaml` | API 定義。リクエスト/レスポンスの型・検証・エンコードの唯一のソース | 手書き | → `backend/src/generated/`・`frontend/src/shared/generated/` |
 | `backend/db/schema.hcl` | DB スキーマの唯一のソース（Atlas） | 手書き | → `erd.md`・`sql.gleam`・DB |
 | `erd.md` | ER 図（Mermaid） | 生成（`mise run gen-erd`） | `schema.hcl` から生成・**編集禁止** |
