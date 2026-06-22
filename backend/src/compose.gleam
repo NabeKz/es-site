@@ -30,7 +30,10 @@ pub fn build(conn: pog.Connection, pepper: String) -> handlers.Handlers {
       sessions_app.me(find_member_id, members_rdb.find_by_id(conn)),
     ),
     products: products.new(
-      products_app.create(products_rdb.save(conn)),
+      products_app.create(
+        products_rdb.save(conn),
+        products_rdb.save_stock_movement(conn),
+      ),
       products_app.list(products_rdb.list(conn)),
     ),
     cart: cart.new(conn, find_member_id),
