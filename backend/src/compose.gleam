@@ -1,4 +1,5 @@
 import pog
+import youid/uuid
 
 import app/handlers
 import app/handlers/auth
@@ -31,6 +32,7 @@ pub fn build(conn: pog.Connection, pepper: String) -> handlers.Handlers {
     ),
     products: products.new(
       products_app.create(
+        uuid.v4,
         products_rdb.save(conn),
         products_rdb.save_stock_movement(conn),
       ),

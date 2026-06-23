@@ -4,6 +4,7 @@ import features/products/application/command
 import generated/requests.{type CreateProductInput, CreateProductInput}
 import generated/responses.{type Product}
 import gleeunit/should
+import youid/uuid
 
 fn fixture_input() -> CreateProductInput {
   CreateProductInput(
@@ -22,7 +23,7 @@ fn noop_save_movement(_product_id, _delta, _type) {
 pub fn create_product_adaptor_error_test() {
   let assert Ok(valid) = command.validate(fixture_input())
   let save = fn(_: Product) { Error("db error") }
-  command.create(save, noop_save_movement)(valid) |> should.be_error
+  command.create(uuid.v4, save, noop_save_movement)(valid) |> should.be_error
 }
 
 // test: 価格の上限を超えたらエラー
@@ -33,14 +34,18 @@ pub fn create_product_price_too_high_test() {
 
 // test: 商品登録時に初期在庫が stock_movements に記録される（UC-1 手順4）
 pub fn create_product_records_initial_stock_test() {
+  let expected_id = uuid.v4()
   let assert Ok(valid) = command.validate(fixture_input())
   let save = fn(product: Product) { Ok(product) }
-  let save_movement = fn(_product_id, delta, movement_type) {
+  let save_movement = fn(product_id, delta, movement_type) {
+    product_id |> should.equal(expected_id)
     delta |> should.equal(10)
     movement_type |> should.equal("initial")
     Ok(Nil)
   }
-  let assert Ok(product) = command.create(save, save_movement)(valid)
+  let assert Ok(product) =
+    command.create(fn() { expected_id }, save, save_movement)(valid)
+  product.id |> should.equal(expected_id)
   product.stock |> should.equal(10)
 }
 
@@ -52,6 +57,7 @@ pub fn create_product_zero_stock_no_movement_test() {
   let save_movement = fn(_product_id, _delta, _type) {
     panic as "stock_movement should not be saved when stock is 0"
   }
-  let assert Ok(product) = command.create(save, save_movement)(valid)
+  let assert Ok(product) =
+    command.create(uuid.v4, save, save_movement)(valid)
   product.stock |> should.equal(0)
 }

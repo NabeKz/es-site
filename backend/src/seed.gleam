@@ -11,6 +11,7 @@ import gleam/string
 import pog
 import shared/env
 import wisp
+import youid/uuid
 
 pub fn main() {
   wisp.configure_logger()
@@ -38,6 +39,7 @@ fn seed_member(conn: pog.Connection, pepper: String) {
 fn seed_products(conn: pog.Connection) {
   let create =
     products_app.create(
+      uuid.v4,
       products_rdb.save(conn),
       products_rdb.save_stock_movement(conn),
     )
