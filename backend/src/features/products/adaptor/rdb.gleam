@@ -1,17 +1,24 @@
-import features/products/application/command
-import features/products/application/query
-import features/products/sql
-import generated/responses.{type Product}
 import gleam/list
 import gleam/result
 import gleam/string
+import gleam/time/timestamp
 import pog
 import wisp
 import youid/uuid.{type Uuid}
 
+import features/products/application/command
+import features/products/application/query
+import features/products/sql
+import generated/responses.{type Product}
+
 fn do_save(db: pog.Connection, product: Product) -> Result(Product, String) {
   db
-  |> sql.create_product(product.id, product.name, product.price, product.description)
+  |> sql.create_product(
+    product.id,
+    product.name,
+    product.price,
+    product.description,
+  )
   |> result.map(fn(_) { product })
   |> result.map_error(fn(err) {
     wisp.log_error(string.inspect(err))
@@ -21,6 +28,28 @@ fn do_save(db: pog.Connection, product: Product) -> Result(Product, String) {
 
 pub fn save(db: pog.Connection) -> command.SaveProduct {
   do_save(db, _)
+}
+
+fn do_save_stock_movement(
+  db: pog.Connection,
+  product_id: Uuid,
+  delta: Int,
+  movement_type: String,
+) -> Result(Nil, String) {
+  let now = timestamp.system_time()
+  db
+  |> sql.create_stock_movement(uuid.v4(), product_id, delta, movement_type, now)
+  |> result.map(fn(_) { Nil })
+  |> result.map_error(fn(err) {
+    wisp.log_error(string.inspect(err))
+    "Failed to save stock movement"
+  })
+}
+
+pub fn save_stock_movement(db: pog.Connection) -> command.SaveStockMovement {
+  fn(product_id, delta, movement_type) {
+    do_save_stock_movement(db, product_id, delta, movement_type)
+  }
 }
 
 fn do_find_stock(db: pog.Connection, product_id: Uuid) -> Result(Int, String) {

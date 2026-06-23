@@ -1,9 +1,14 @@
 import features/products/application/command
 import features/products/application/query
 
+pub type GenerateId =
+  command.GenerateId
+
 pub type SaveProduct =
   command.SaveProduct
 
+pub type SaveStockMovement =
+  command.SaveStockMovement
 
 pub type Create =
   command.Create
