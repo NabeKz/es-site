@@ -69,6 +69,73 @@ table "sessions" {
   }
 }
 
+table "admins" {
+  schema = schema.app
+
+  column "id" {
+    type = uuid
+    null = false
+  }
+  column "email" {
+    type = varchar(255)
+    null = false
+  }
+  column "password_hash" {
+    type = text
+    null = false
+  }
+  column "salt" {
+    type = text
+    null = false
+  }
+  column "created_at" {
+    type = timestamp
+    null = false
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  unique "admins_email_key" {
+    columns = [column.email]
+  }
+}
+
+table "admin_sessions" {
+  schema = schema.app
+
+  column "id" {
+    type = uuid
+    null = false
+  }
+  column "admin_id" {
+    type = uuid
+    null = false
+  }
+  column "token" {
+    type = text
+    null = false
+  }
+  column "created_at" {
+    type = timestamp
+    null = false
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  unique "admin_sessions_token_key" {
+    columns = [column.token]
+  }
+
+  foreign_key "admin_sessions_admin_id_fkey" {
+    columns     = [column.admin_id]
+    ref_columns = [table.admins.column.id]
+  }
+}
+
 table "products" {
   schema = schema.app
 

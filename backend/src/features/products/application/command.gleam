@@ -18,7 +18,7 @@ pub type SaveStockMovement =
   fn(Uuid, Int, String) -> Result(Nil, String)
 
 pub type Create =
-  fn(ValidProductInput) -> Result(Product, String)
+  fn(Uuid, ValidProductInput) -> Result(Product, String)
 
 pub fn validate(input: CreateProductInput) -> Result(ValidProductInput, List(String)) {
   let errors =
@@ -48,7 +48,7 @@ pub fn create(
   save: SaveProduct,
   save_movement: SaveStockMovement,
 ) -> Create {
-  fn(input: ValidProductInput) {
+  fn(_admin_id: Uuid, input: ValidProductInput) {
     do_create(generate_id, save, save_movement, input)
   }
 }

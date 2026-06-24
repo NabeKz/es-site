@@ -73,6 +73,46 @@ paths:
                 items:
                   $ref: "#/components/schemas/Product"
 
+  /admin/auth/login:
+    post:
+      summary: 管理者ログイン
+      operationId: adminLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthInput"
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admin"
+        "401":
+          description: 認証失敗
+  /admin/auth/logout:
+    post:
+      summary: 管理者ログアウト
+      operationId: adminLogout
+      responses:
+        "204":
+          description: ログアウト完了
+  /admin/auth/me:
+    get:
+      summary: 現在のログイン管理者取得
+      operationId: getAdminMe
+      responses:
+        "200":
+          description: ログイン中の管理者
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admin"
+        "401":
+          description: 未認証
+
   /admin/products:
     post:
       summary: 商品登録（管理者）
@@ -212,6 +252,18 @@ components:
           minLength: 8
 
     Member:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+
+    Admin:
       type: object
       required:
         - id

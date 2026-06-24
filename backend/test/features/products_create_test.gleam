@@ -23,7 +23,8 @@ fn noop_save_movement(_product_id, _delta, _type) {
 pub fn create_product_adaptor_error_test() {
   let assert Ok(valid) = command.validate(fixture_input())
   let save = fn(_: Product) { Error("db error") }
-  command.create(uuid.v4, save, noop_save_movement)(valid) |> should.be_error
+  command.create(uuid.v4, save, noop_save_movement)(uuid.v4(), valid)
+  |> should.be_error
 }
 
 // test: 価格の上限を超えたらエラー
@@ -44,7 +45,7 @@ pub fn create_product_records_initial_stock_test() {
     Ok(Nil)
   }
   let assert Ok(product) =
-    command.create(fn() { expected_id }, save, save_movement)(valid)
+    command.create(fn() { expected_id }, save, save_movement)(uuid.v4(), valid)
   product.id |> should.equal(expected_id)
   product.stock |> should.equal(10)
 }
@@ -58,6 +59,6 @@ pub fn create_product_zero_stock_no_movement_test() {
     panic as "stock_movement should not be saved when stock is 0"
   }
   let assert Ok(product) =
-    command.create(uuid.v4, save, save_movement)(valid)
+    command.create(uuid.v4, save, save_movement)(uuid.v4(), valid)
   product.stock |> should.equal(0)
 }
