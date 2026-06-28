@@ -1,11 +1,9 @@
 import features/admin_sessions/application/command
 import features/admin_sessions/sql
-import gleam/list
 import gleam/result
-import gleam/string
 import gleam/time/timestamp
 import pog
-import wisp
+import shared/db as repo
 import youid/uuid
 
 fn do_save_session(
@@ -15,13 +13,11 @@ fn do_save_session(
   token: String,
   created_at: timestamp.Timestamp,
 ) -> Result(String, String) {
-  db
-  |> sql.create_admin_session(id, admin_id, token, created_at)
-  |> result.map(fn(_) { token })
-  |> result.map_error(fn(err) {
-    wisp.log_error(string.inspect(err))
-    "Failed to save admin session"
-  })
+  use _ <- repo.query(
+    run: fn() { db |> sql.create_admin_session(id, admin_id, token, created_at) },
+    on_error: "Failed to save admin session",
+  )
+  Ok(token)
 }
 
 pub fn save_session(db: pog.Connection) -> command.SaveSession {
@@ -30,17 +26,12 @@ pub fn save_session(db: pog.Connection) -> command.SaveSession {
   }
 }
 
-fn do_delete_session(
-  db: pog.Connection,
-  token: String,
-) -> Result(Nil, String) {
-  db
-  |> sql.delete_admin_session(token)
-  |> result.map(fn(_) { Nil })
-  |> result.map_error(fn(err) {
-    wisp.log_error(string.inspect(err))
-    "Failed to delete admin session"
-  })
+fn do_delete_session(db: pog.Connection, token: String) -> Result(Nil, String) {
+  use _ <- repo.query(
+    run: fn() { db |> sql.delete_admin_session(token) },
+    on_error: "Failed to delete admin session",
+  )
+  Ok(Nil)
 }
 
 pub fn delete_session(db: pog.Connection) -> command.DeleteSession {
@@ -55,16 +46,13 @@ fn do_find_admin_id_by_token(
   db: pog.Connection,
   token: String,
 ) -> Result(uuid.Uuid, String) {
-  use returned <- result.try(
-    db
-    |> sql.find_admin_session_by_token(token)
-    |> result.map_error(fn(err) {
-      wisp.log_error(string.inspect(err))
-      "Failed to find admin session"
-    }),
+  use returned <- repo.query(
+    run: fn() { db |> sql.find_admin_session_by_token(token) },
+    on_error: "Failed to find admin session",
   )
-  returned.rows
-  |> list.first()
-  |> result.map(fn(row) { row.admin_id })
-  |> result.map_error(fn(_) { "admin session not found" })
+  use row <- result.try(repo.first_row(
+    returned,
+    not_found: "admin session not found",
+  ))
+  Ok(row.admin_id)
 }

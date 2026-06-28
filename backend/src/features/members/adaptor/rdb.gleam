@@ -1,26 +1,25 @@
 import domain/member.{type MemberRecord, MemberRecord}
 import features/members/application/command
 import features/members/sql
-import gleam/list
 import gleam/result
-import gleam/string
 import pog
-import wisp
+import shared/db as repo
 import youid/uuid
 
 fn do_save(db: pog.Connection, record: MemberRecord) -> Result(MemberRecord, String) {
-  db
-  |> sql.create_member(
-    record.id,
-    record.email,
-    record.password_hash,
-    record.salt,
+  use _ <- repo.query(
+    run: fn() {
+      db
+      |> sql.create_member(
+        record.id,
+        record.email,
+        record.password_hash,
+        record.salt,
+      )
+    },
+    on_error: "Failed to save member",
   )
-  |> result.map(fn(_) { record })
-  |> result.map_error(fn(err) {
-    wisp.log_error(string.inspect(err))
-    "Failed to save member"
-  })
+  Ok(record)
 }
 
 pub fn save(db: pog.Connection) -> command.SaveMember {
@@ -31,16 +30,11 @@ fn do_find_by_email(
   db: pog.Connection,
   email: String,
 ) -> Result(MemberRecord, String) {
-  use returned <- result.try(
-    db
-    |> sql.find_member_by_email(email)
-    |> result.map_error(fn(_) { "not found" }),
+  use returned <- repo.query(
+    run: fn() { db |> sql.find_member_by_email(email) },
+    on_error: "Failed to find member",
   )
-  use row <- result.try(
-    returned.rows
-    |> list.first()
-    |> result.map_error(fn(_) { "not found" }),
-  )
+  use row <- result.try(repo.first_row(returned, not_found: "not found"))
   Ok(MemberRecord(
     id: row.id,
     email: row.email,
@@ -61,16 +55,11 @@ fn do_find_by_id(
   db: pog.Connection,
   id: uuid.Uuid,
 ) -> Result(MemberRecord, String) {
-  use returned <- result.try(
-    db
-    |> sql.find_member_by_id(id)
-    |> result.map_error(fn(_) { "not found" }),
+  use returned <- repo.query(
+    run: fn() { db |> sql.find_member_by_id(id) },
+    on_error: "Failed to find member",
   )
-  use row <- result.try(
-    returned.rows
-    |> list.first()
-    |> result.map_error(fn(_) { "not found" }),
-  )
+  use row <- result.try(repo.first_row(returned, not_found: "not found"))
   Ok(MemberRecord(
     id: row.id,
     email: row.email,

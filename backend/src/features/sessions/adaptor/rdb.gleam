@@ -1,11 +1,9 @@
 import features/sessions/application/command
 import features/sessions/sql
-import gleam/list
 import gleam/result
-import gleam/string
 import gleam/time/timestamp
 import pog
-import wisp
+import shared/db as repo
 import youid/uuid
 
 fn do_save_session(
@@ -15,13 +13,11 @@ fn do_save_session(
   token: String,
   created_at: timestamp.Timestamp,
 ) -> Result(String, String) {
-  db
-  |> sql.create_session(id, member_id, token, created_at)
-  |> result.map(fn(_) { token })
-  |> result.map_error(fn(err) {
-    wisp.log_error(string.inspect(err))
-    "Failed to save session"
-  })
+  use _ <- repo.query(
+    run: fn() { db |> sql.create_session(id, member_id, token, created_at) },
+    on_error: "Failed to save session",
+  )
+  Ok(token)
 }
 
 pub fn save_session(db: pog.Connection) -> command.SaveSession {
@@ -30,17 +26,12 @@ pub fn save_session(db: pog.Connection) -> command.SaveSession {
   }
 }
 
-fn do_delete_session(
-  db: pog.Connection,
-  token: String,
-) -> Result(Nil, String) {
-  db
-  |> sql.delete_session(token)
-  |> result.map(fn(_) { Nil })
-  |> result.map_error(fn(err) {
-    wisp.log_error(string.inspect(err))
-    "Failed to delete session"
-  })
+fn do_delete_session(db: pog.Connection, token: String) -> Result(Nil, String) {
+  use _ <- repo.query(
+    run: fn() { db |> sql.delete_session(token) },
+    on_error: "Failed to delete session",
+  )
+  Ok(Nil)
 }
 
 pub fn delete_session(db: pog.Connection) -> command.DeleteSession {
@@ -51,17 +42,14 @@ pub fn find_member_id_by_token(db: pog.Connection) -> command.FindMemberIdByToke
   do_find_member_id_by_token(db, _)
 }
 
-fn do_find_member_id_by_token(db: pog.Connection, token: String) -> Result(uuid.Uuid, String) {
-  use returned <- result.try(
-    db
-    |> sql.find_session_by_token(token)
-    |> result.map_error(fn(err) {
-      wisp.log_error(string.inspect(err))
-      "Failed to find session"
-    }),
+fn do_find_member_id_by_token(
+  db: pog.Connection,
+  token: String,
+) -> Result(uuid.Uuid, String) {
+  use returned <- repo.query(
+    run: fn() { db |> sql.find_session_by_token(token) },
+    on_error: "Failed to find session",
   )
-  returned.rows
-  |> list.first()
-  |> result.map(fn(row) { row.member_id })
-  |> result.map_error(fn(_) { "session not found" })
+  use row <- result.try(repo.first_row(returned, not_found: "session not found"))
+  Ok(row.member_id)
 }
