@@ -29,6 +29,49 @@ WHERE id = $1
   |> pog.execute(db)
 }
 
+/// A row you get from running the `find_cart_item_by_id` query
+/// defined in `./src/features/cart/sql/find_cart_item_by_id.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type FindCartItemByIdRow {
+  FindCartItemByIdRow(
+    id: Uuid,
+    member_id: Uuid,
+    product_id: Uuid,
+    quantity: Int,
+  )
+}
+
+/// Runs the `find_cart_item_by_id` query
+/// defined in `./src/features/cart/sql/find_cart_item_by_id.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn find_cart_item_by_id(
+  db: pog.Connection,
+  arg_1: Uuid,
+) -> Result(pog.Returned(FindCartItemByIdRow), pog.QueryError) {
+  let decoder = {
+    use id <- decode.field(0, uuid_decoder())
+    use member_id <- decode.field(1, uuid_decoder())
+    use product_id <- decode.field(2, uuid_decoder())
+    use quantity <- decode.field(3, decode.int)
+    decode.success(FindCartItemByIdRow(id:, member_id:, product_id:, quantity:))
+  }
+
+  "SELECT id, member_id, product_id, quantity
+FROM app.cart_items
+WHERE id = $1
+"
+  |> pog.query
+  |> pog.parameter(pog.text(uuid.to_string(arg_1)))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
 /// A row you get from running the `find_cart_item_by_member_product` query
 /// defined in `./src/features/cart/sql/find_cart_item_by_member_product.sql`.
 ///

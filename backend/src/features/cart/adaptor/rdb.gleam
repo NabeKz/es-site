@@ -59,6 +59,33 @@ pub fn find_item_by_member_product(
   }
 }
 
+fn do_find_item_by_id(
+  db: pog.Connection,
+  id: Uuid,
+) -> Result(Option(CartItem), String) {
+  use returned <- repo.query(
+    run: fn() { db |> sql.find_cart_item_by_id(id) },
+    on_error: "Failed to find cart item",
+  )
+  case returned.rows {
+    [] -> Ok(option.None)
+    [row, ..] ->
+      Ok(
+        option.Some(CartItem(
+          id: row.id,
+          product_id: row.product_id,
+          name: "",
+          price: 0,
+          quantity: row.quantity,
+        )),
+      )
+  }
+}
+
+pub fn find_item_by_id(db: pog.Connection) -> command.FindCartItemById {
+  fn(id) { do_find_item_by_id(db, id) }
+}
+
 fn do_find_items_by_member(
   db: pog.Connection,
   member_id: Uuid,

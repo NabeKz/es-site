@@ -55,11 +55,16 @@ fn update_item(
   use id <- validation.require_uuid(id)
   use input <- request.require_json_body(req, requests.parse_update_cart_item_input)
   use valid <- error_responses.require_ok(cart_app.validate_update(input))
-  case cart_app.update(cart_rdb.update_item(db))(id, valid) {
+  let find_item = cart_rdb.find_item_by_id(db)
+  let find_stock = products_rdb.find_stock(db)
+  let update = cart_rdb.update_item(db)
+  case cart_app.update(find_item, find_stock, update)(id, valid) {
     Ok(item) ->
       item
       |> responses.encode_cart_item
       |> response.json_response(200)
+    Error("cart item not found") -> wisp.response(404)
+    Error("out of stock") -> wisp.response(409)
     Error(err) -> wisp.bad_request(err)
   }
 }

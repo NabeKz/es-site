@@ -9,6 +9,9 @@ pub type FindStock =
 pub type FindCartItem =
   command.FindCartItem
 
+pub type FindCartItemById =
+  command.FindCartItemById
+
 pub type UpdateCartItem =
   command.UpdateCartItem
 

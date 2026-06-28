@@ -18,6 +18,9 @@ pub type FindStock =
 pub type FindCartItem =
   fn(Uuid, Uuid) -> Result(Option(CartItem), String)
 
+pub type FindCartItemById =
+  fn(Uuid) -> Result(Option(CartItem), String)
+
 pub type SaveCartItem =
   fn(Uuid, CartItem) -> Result(CartItem, String)
 
@@ -61,10 +64,10 @@ pub fn create(
     let ValidAddCartItemInput(product_id, quantity) = input
     use stock <- result.try(find_stock(product_id))
     use existing <- result.try(find_cart_item(member_id, product_id))
-    case stock, existing {
-      0, _ -> Error("out of stock")
+    case quantity > stock, existing {
+      True, _ -> Error("out of stock")
       _, option.Some(_) -> Error("already in cart")
-      _, option.None -> {
+      False, option.None -> {
         let item =
           CartItem(
             id: uuid.v4(),
@@ -79,10 +82,23 @@ pub fn create(
   }
 }
 
-pub fn update(update_item: UpdateCartItem) -> Update {
+pub fn update(
+  find_cart_item_by_id: FindCartItemById,
+  find_stock: FindStock,
+  update_item: UpdateCartItem,
+) -> Update {
   fn(id: Uuid, input: ValidUpdateCartItemInput) {
     let ValidUpdateCartItemInput(quantity) = input
-    update_item(id, quantity)
+    use item <- result.try(case find_cart_item_by_id(id) {
+      Ok(option.Some(item)) -> Ok(item)
+      Ok(option.None) -> Error("cart item not found")
+      Error(err) -> Error(err)
+    })
+    use stock <- result.try(find_stock(item.product_id))
+    case quantity > stock {
+      True -> Error("out of stock")
+      False -> update_item(id, quantity)
+    }
   }
 }
 
