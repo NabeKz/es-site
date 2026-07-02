@@ -6,7 +6,13 @@ pub type FetchCartItems =
 pub type SaveOrder =
   command.SaveOrder
 
-pub type Create =
-  command.Create
+pub type Accept =
+  command.Accept
 
-pub const create = command.create
+pub type AcceptedOrder =
+  command.AcceptedOrder
+
+pub type OrderStatus =
+  command.OrderStatus
+
+pub const accept = command.accept

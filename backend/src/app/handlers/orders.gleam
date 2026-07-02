@@ -21,9 +21,11 @@ fn create(
   use member_id <- require_auth(req, find_member_id)
   let fetch_items = cart_rdb.find_items_by_member(db)
   let save = orders_rdb.save(db)
-  case orders_app.create(fetch_items, save)(member_id) {
-    Ok(order) ->
-      order
+  // 受付のみを同期で返す。在庫引き当て・決済・確定はワークフローが非同期で行う（workflow.md）。
+  // TODO: 受付を表す 202 へ見直す（openapi /orders の 202 化と合わせて）
+  case orders_app.accept(fetch_items, save)(member_id) {
+    Ok(accepted) ->
+      accepted.order
       |> responses.encode_order
       |> response.json_response(201)
     Error("cart is empty") -> wisp.response(422)
