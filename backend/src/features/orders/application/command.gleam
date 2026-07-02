@@ -32,6 +32,22 @@ pub fn create(fetch_items: FetchCartItems, save: SaveOrder) -> Create {
   }
 }
 
+/// 在庫引き当て（UC-6 手順4）。product 単位の不変条件 `available - requested >= 0`
+/// を守り、満たせば `stock_movements` に書く在庫変動（負の delta）を返す。
+///
+/// この関数は純粋なので「引き当てが直列化されている」前提でのみ正しい。売り越しの
+/// 実防衛は、外側で product_id 単位のアドバイザリロックにより引き当てを直列化して
+/// 担保する（Amazon 方式・在庫の確保は注文確定時の1箇所だけ）。
+pub fn allocate_stock(
+  available available: Int,
+  requested requested: Int,
+) -> Result(Int, String) {
+  case available >= requested {
+    True -> Ok(-requested)
+    False -> Error("insufficient stock")
+  }
+}
+
 fn cart_item_to_order_item(item: CartItem) -> OrderItem {
   OrderItem(
     id: uuid.v4(),
