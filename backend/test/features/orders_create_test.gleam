@@ -25,49 +25,49 @@ fn fixture_cart_items() -> List(CartItem) {
   ]
 }
 
-// test: 注文が正常に作成される
-pub fn create_order_success_test() {
+// test: 受付した注文にカートの内容と合計金額が入る
+pub fn accept_order_success_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Ok(fixture_cart_items()) }
   let save = fn(_: Uuid, order: Order) { Ok(order) }
-  let assert Ok(order) = command.create(fetch_items, save)(member_id)
-  order.total_price |> should.equal(2500)
-  list.length(order.items) |> should.equal(2)
+  let assert Ok(accepted) = command.accept(fetch_items, save)(member_id)
+  accepted.order.total_price |> should.equal(2500)
+  list.length(accepted.order.items) |> should.equal(2)
 }
 
 // test: OrderItem に商品のスナップショット価格が入る
-pub fn create_order_snapshots_unit_price_test() {
+pub fn accept_order_snapshots_unit_price_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Ok(fixture_cart_items()) }
   let save = fn(_: Uuid, order: Order) { Ok(order) }
-  let assert Ok(order) = command.create(fetch_items, save)(member_id)
-  let assert Ok(first) = list.first(order.items)
+  let assert Ok(accepted) = command.accept(fetch_items, save)(member_id)
+  let assert Ok(first) = list.first(accepted.order.items)
   first.unit_price |> should.equal(1000)
   first.quantity |> should.equal(2)
 }
 
 // test: カートが空のときはエラー
-pub fn create_order_empty_cart_test() {
+pub fn accept_order_empty_cart_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Ok([]) }
   let save = fn(_: Uuid, order: Order) { Ok(order) }
-  command.create(fetch_items, save)(member_id) |> should.be_error
+  command.accept(fetch_items, save)(member_id) |> should.be_error
 }
 
 // test: カート取得でエラーが起きたらエラーを返す
-pub fn create_order_fetch_error_test() {
+pub fn accept_order_fetch_error_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Error("db error") }
   let save = fn(_: Uuid, order: Order) { Ok(order) }
-  command.create(fetch_items, save)(member_id) |> should.be_error
+  command.accept(fetch_items, save)(member_id) |> should.be_error
 }
 
 // test: 保存でエラーが起きたらエラーを返す
-pub fn create_order_save_error_test() {
+pub fn accept_order_save_error_test() {
   let member_id = uuid.v4()
   let fetch_items = fn(_: Uuid) { Ok(fixture_cart_items()) }
   let save = fn(_: Uuid, _: Order) { Error("db error") }
-  command.create(fetch_items, save)(member_id) |> should.be_error
+  command.accept(fetch_items, save)(member_id) |> should.be_error
 }
 
 // --- 以下はサーガ設計（UC-6: 受付 → 在庫引き当て・決済 → 確定 / 失敗時は補償）の観点。
@@ -75,8 +75,11 @@ pub fn create_order_save_error_test() {
 
 // test: 注文を受け付けると「受付」状態になる（UC-6 受付）
 pub fn accept_order_marks_pending_test() {
-  todo
-  // カートに商品があれば注文を受け付け、状態が「受付」になる
+  let member_id = uuid.v4()
+  let fetch_items = fn(_: Uuid) { Ok(fixture_cart_items()) }
+  let save = fn(_: Uuid, order: Order) { Ok(order) }
+  let assert Ok(accepted) = command.accept(fetch_items, save)(member_id)
+  accepted.status |> should.equal(command.Accepted)
 }
 
 // test: 在庫を引き当てるとき同じ商品を売り越さない（UC-6 手順4）
