@@ -44,28 +44,29 @@ pub fn save(db: pog.Connection) -> command.SaveOrder {
   fn(member_id, order) { do_save(db, member_id, order) }
 }
 
-fn do_confirm(db: pog.Connection, order_id: Uuid) -> Result(Nil, String) {
+type InsertRecord =
+  fn(pog.Connection, Uuid, Uuid, timestamp.Timestamp) ->
+    Result(pog.Returned(Nil), pog.QueryError)
+
+fn do_record(
+  db: pog.Connection,
+  insert: InsertRecord,
+  order_id: Uuid,
+  on_error: String,
+) -> Result(Nil, String) {
   let now = timestamp.system_time()
-  use _ <- repo.query(
-    run: fn() { db |> sql.create_order_confirmation(uuid.v4(), order_id, now) },
-    on_error: "Failed to confirm order",
-  )
+  use _ <- repo.query(run: fn() { insert(db, uuid.v4(), order_id, now) }, on_error:)
   Ok(Nil)
 }
 
 pub fn confirm(db: pog.Connection) -> command.ConfirmOrder {
-  fn(order_id) { do_confirm(db, order_id) }
-}
-
-fn do_cancel(db: pog.Connection, order_id: Uuid) -> Result(Nil, String) {
-  let now = timestamp.system_time()
-  use _ <- repo.query(
-    run: fn() { db |> sql.create_order_cancellation(uuid.v4(), order_id, now) },
-    on_error: "Failed to cancel order",
-  )
-  Ok(Nil)
+  fn(order_id) {
+    do_record(db, sql.create_order_confirmation, order_id, "Failed to confirm order")
+  }
 }
 
 pub fn cancel(db: pog.Connection) -> command.CancelOrder {
-  fn(order_id) { do_cancel(db, order_id) }
+  fn(order_id) {
+    do_record(db, sql.create_order_cancellation, order_id, "Failed to cancel order")
+  }
 }
