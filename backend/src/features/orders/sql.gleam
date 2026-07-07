@@ -58,6 +58,56 @@ RETURNING id, member_id, total_price, created_at
   |> pog.execute(db)
 }
 
+/// Runs the `create_order_cancellation` query
+/// defined in `./src/features/orders/sql/create_order_cancellation.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn create_order_cancellation(
+  db: pog.Connection,
+  arg_1: Uuid,
+  arg_2: Uuid,
+  arg_3: Timestamp,
+) -> Result(pog.Returned(Nil), pog.QueryError) {
+  let decoder = decode.map(decode.dynamic, fn(_) { Nil })
+
+  "INSERT INTO app.order_cancellations (id, order_id, canceled_at)
+VALUES ($1, $2, $3)
+"
+  |> pog.query
+  |> pog.parameter(pog.text(uuid.to_string(arg_1)))
+  |> pog.parameter(pog.text(uuid.to_string(arg_2)))
+  |> pog.parameter(pog.timestamp(arg_3))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
+/// Runs the `create_order_confirmation` query
+/// defined in `./src/features/orders/sql/create_order_confirmation.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn create_order_confirmation(
+  db: pog.Connection,
+  arg_1: Uuid,
+  arg_2: Uuid,
+  arg_3: Timestamp,
+) -> Result(pog.Returned(Nil), pog.QueryError) {
+  let decoder = decode.map(decode.dynamic, fn(_) { Nil })
+
+  "INSERT INTO app.order_confirmations (id, order_id, confirmed_at)
+VALUES ($1, $2, $3)
+"
+  |> pog.query
+  |> pog.parameter(pog.text(uuid.to_string(arg_1)))
+  |> pog.parameter(pog.text(uuid.to_string(arg_2)))
+  |> pog.parameter(pog.timestamp(arg_3))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
 /// A row you get from running the `create_order_item` query
 /// defined in `./src/features/orders/sql/create_order_item.sql`.
 ///

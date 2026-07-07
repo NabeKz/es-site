@@ -15,6 +15,9 @@ pub type UpdateCartItem =
 pub type DeleteCartItem =
   command.DeleteCartItem
 
+pub type ClearCart =
+  command.ClearCart
+
 pub type Create =
   command.Create
 

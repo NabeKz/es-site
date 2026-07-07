@@ -43,3 +43,30 @@ fn do_save(
 pub fn save(db: pog.Connection) -> command.SaveOrder {
   fn(member_id, order) { do_save(db, member_id, order) }
 }
+
+type InsertRecord =
+  fn(pog.Connection, Uuid, Uuid, timestamp.Timestamp) ->
+    Result(pog.Returned(Nil), pog.QueryError)
+
+fn do_record(
+  db: pog.Connection,
+  insert: InsertRecord,
+  order_id: Uuid,
+  on_error: String,
+) -> Result(Nil, String) {
+  let now = timestamp.system_time()
+  use _ <- repo.query(run: fn() { insert(db, uuid.v4(), order_id, now) }, on_error:)
+  Ok(Nil)
+}
+
+pub fn confirm(db: pog.Connection) -> command.ConfirmOrder {
+  fn(order_id) {
+    do_record(db, sql.create_order_confirmation, order_id, "Failed to confirm order")
+  }
+}
+
+pub fn cancel(db: pog.Connection) -> command.CancelOrder {
+  fn(order_id) {
+    do_record(db, sql.create_order_cancellation, order_id, "Failed to cancel order")
+  }
+}

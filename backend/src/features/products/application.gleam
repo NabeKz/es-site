@@ -10,6 +10,12 @@ pub type SaveProduct =
 pub type SaveStockMovement =
   command.SaveStockMovement
 
+pub type Allocate =
+  command.Allocate
+
+pub type ReturnStock =
+  command.ReturnStock
+
 pub type Create =
   command.Create
 
@@ -24,3 +30,5 @@ pub const create = command.create
 pub const validate = command.validate
 
 pub const list = query.list
+
+pub const allocate_stock = command.allocate_stock

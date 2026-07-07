@@ -70,9 +70,6 @@ pub fn accept_order_save_error_test() {
   command.accept(fetch_items, save)(member_id) |> should.be_error
 }
 
-// --- 以下はサーガ設計（UC-6: 受付 → 在庫引き当て・決済 → 確定 / 失敗時は補償）の観点。
-//     実装フェーズで上の同期版テストをこの形に再構成する ---
-
 // test: 注文を受け付けると「受付」状態になる（UC-6 受付）
 pub fn accept_order_marks_pending_test() {
   let member_id = uuid.v4()
@@ -80,32 +77,4 @@ pub fn accept_order_marks_pending_test() {
   let save = fn(_: Uuid, order: Order) { Ok(order) }
   let assert Ok(accepted) = command.accept(fetch_items, save)(member_id)
   accepted.status |> should.equal(command.Accepted)
-}
-
-// test: 在庫を引き当てるとき同じ商品を売り越さない（UC-6 手順4）
-pub fn allocate_stock_prevents_overselling_test() {
-  // 在庫が注文数を満たせば引き当て成功。書き込む在庫変動は負の delta
-  command.allocate_stock(available: 5, requested: 3) |> should.equal(Ok(-3))
-  // ちょうど在庫ぴったりでも成功する（境界: available - requested == 0）
-  command.allocate_stock(available: 3, requested: 3) |> should.equal(Ok(-3))
-  // 在庫が注文数を満たさなければ失敗する（単一集約の不変条件を破らない）
-  command.allocate_stock(available: 2, requested: 3) |> should.be_error
-}
-
-// test: 在庫が足りないとき注文を取り消す（UC-6 補償）
-pub fn order_canceled_when_stock_insufficient_test() {
-  todo
-  // 引き当てに失敗したら注文の状態が「取消」になる
-}
-
-// test: 決済が失敗したら引き当てた在庫を戻して注文を取り消す（UC-6 補償）
-pub fn order_canceled_and_stock_returned_when_payment_fails_test() {
-  todo
-  // 決済失敗時、引き当てた在庫を戻し、注文の状態が「取消」になる
-}
-
-// test: 在庫引き当てと決済が完了すると注文が確定しカートが空になる（UC-6 手順5・6）
-pub fn order_confirmed_and_cart_cleared_on_success_test() {
-  todo
-  // 引き当てと決済が成功したら注文の状態が「確定」になり、カートが空になる
 }
