@@ -16,6 +16,20 @@ pub fn encode_member(value: Member) -> json.Json {
   ])
 }
 
+pub type Admin {
+  Admin(
+    id: Uuid,
+    email: String,
+  )
+}
+
+pub fn encode_admin(value: Admin) -> json.Json {
+  json.object([
+    #("id", json.string(uuid.to_string(value.id))),
+    #("email", json.string(value.email)),
+  ])
+}
+
 pub type Product {
   Product(
     id: Uuid,

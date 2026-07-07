@@ -221,20 +221,20 @@ paths:
 
   /orders:
     post:
-      summary: 注文確定
-      description: カートの内容で注文を作成し、モック決済を実行する
+      summary: 注文受付
+      description: カートの内容で注文を受け付ける。在庫引き当て・決済・確定は非同期に行われる
       operationId: createOrder
       responses:
-        "201":
-          description: 作成した注文
+        "202":
+          description: 受け付けた注文
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Order"
         "401":
           description: 未認証
-        "409":
-          description: 在庫不足または空カート
+        "422":
+          description: カートが空
 
 components:
   schemas:
