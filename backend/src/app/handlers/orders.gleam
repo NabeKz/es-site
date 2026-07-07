@@ -27,7 +27,6 @@ fn create(
   let save = orders_rdb.save(db)
   // 受付は同期で返す。在庫引き当て・決済・確定/補償はワークフローが行う（workflow.md）。
   // YAGNI: 決済モックの間は event_queue によるポーリングを作らず直接呼び出しにとどめる。
-  // TODO: 受付を表す 202 へ見直す（openapi /orders の 202 化と合わせて）
   let process =
     orders_workflow.process(
       allocate_stock: products_rdb.allocate(db),
@@ -42,7 +41,7 @@ fn create(
       let _ = process(accepted)
       accepted.order
       |> responses.encode_order
-      |> response.json_response(201)
+      |> response.json_response(202)
     }
     Error("cart is empty") -> wisp.response(422)
     Error(err) -> wisp.bad_request(err)
