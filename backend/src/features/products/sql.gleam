@@ -161,6 +161,42 @@ GROUP BY p.id
   |> pog.execute(db)
 }
 
+/// A row you get from running the `lock_product_stock` query
+/// defined in `./src/features/products/sql/lock_product_stock.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type LockProductStockRow {
+  LockProductStockRow(ok: Int)
+}
+
+/// Runs the `lock_product_stock` query
+/// defined in `./src/features/products/sql/lock_product_stock.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn lock_product_stock(
+  db: pog.Connection,
+  arg_1: String,
+) -> Result(pog.Returned(LockProductStockRow), pog.QueryError) {
+  let decoder = {
+    use ok <- decode.field(0, decode.int)
+    decode.success(LockProductStockRow(ok:))
+  }
+
+  "WITH locked AS (
+  SELECT pg_advisory_xact_lock(hashtext($1::text))
+)
+SELECT 1 AS ok
+"
+  |> pog.query
+  |> pog.parameter(pog.text(arg_1))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
 // --- Encoding/decoding utils -------------------------------------------------
 
 /// A decoder to decode `Uuid`s coming from a Postgres query.

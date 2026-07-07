@@ -344,3 +344,63 @@ table "payments" {
     ref_columns = [table.orders.column.id]
   }
 }
+
+table "order_confirmations" {
+  schema = schema.app
+
+  column "id" {
+    type = uuid
+    null = false
+  }
+  column "order_id" {
+    type = uuid
+    null = false
+  }
+  column "confirmed_at" {
+    type = timestamp
+    null = false
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  unique "order_confirmations_order_id_key" {
+    columns = [column.order_id]
+  }
+
+  foreign_key "order_confirmations_order_id_fkey" {
+    columns     = [column.order_id]
+    ref_columns = [table.orders.column.id]
+  }
+}
+
+table "order_cancellations" {
+  schema = schema.app
+
+  column "id" {
+    type = uuid
+    null = false
+  }
+  column "order_id" {
+    type = uuid
+    null = false
+  }
+  column "canceled_at" {
+    type = timestamp
+    null = false
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  unique "order_cancellations_order_id_key" {
+    columns = [column.order_id]
+  }
+
+  foreign_key "order_cancellations_order_id_fkey" {
+    columns     = [column.order_id]
+    ref_columns = [table.orders.column.id]
+  }
+}

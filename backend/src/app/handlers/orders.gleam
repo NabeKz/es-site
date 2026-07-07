@@ -3,10 +3,14 @@ import app/handlers/response
 import features/cart/adaptor/rdb as cart_rdb
 import features/orders/application as orders_app
 import features/orders/adaptor/rdb as orders_rdb
+import features/payments/application as payments_app
+import features/payments/adaptor/rdb as payments_rdb
+import features/products/adaptor/rdb as products_rdb
 import features/sessions/application as sessions_app
 import generated/responses
 import pog
 import wisp.{type Request, type Response}
+import workflows/orders as orders_workflow
 import youid/uuid.{type Uuid}
 
 pub type OrdersHandler {
@@ -21,13 +25,25 @@ fn create(
   use member_id <- require_auth(req, find_member_id)
   let fetch_items = cart_rdb.find_items_by_member(db)
   let save = orders_rdb.save(db)
-  // 受付のみを同期で返す。在庫引き当て・決済・確定はワークフローが非同期で行う（workflow.md）。
+  // 受付は同期で返す。在庫引き当て・決済・確定/補償はワークフローが行う（workflow.md）。
+  // YAGNI: 決済モックの間は event_queue によるポーリングを作らず直接呼び出しにとどめる。
   // TODO: 受付を表す 202 へ見直す（openapi /orders の 202 化と合わせて）
+  let process =
+    orders_workflow.process(
+      allocate_stock: products_rdb.allocate(db),
+      return_stock: products_rdb.return_stock(db),
+      pay: payments_app.pay(payments_rdb.save(db)),
+      confirm_order: orders_rdb.confirm(db),
+      cancel_order: orders_rdb.cancel(db),
+      clear_cart: cart_rdb.clear(db),
+    )
   case orders_app.accept(fetch_items, save)(member_id) {
-    Ok(accepted) ->
+    Ok(accepted) -> {
+      let _ = process(accepted)
       accepted.order
       |> responses.encode_order
       |> response.json_response(201)
+    }
     Error("cart is empty") -> wisp.response(422)
     Error(err) -> wisp.bad_request(err)
   }

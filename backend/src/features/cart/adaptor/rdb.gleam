@@ -120,3 +120,15 @@ fn do_delete_item(db: pog.Connection, id: Uuid) -> Result(Nil, String) {
 pub fn delete_item(db: pog.Connection) -> command.DeleteCartItem {
   do_delete_item(db, _)
 }
+
+fn do_clear(db: pog.Connection, member_id: Uuid) -> Result(Nil, String) {
+  use _ <- repo.query(
+    run: fn() { db |> sql.delete_cart_items_by_member(member_id) },
+    on_error: "Failed to clear cart",
+  )
+  Ok(Nil)
+}
+
+pub fn clear(db: pog.Connection) -> command.ClearCart {
+  do_clear(db, _)
+}

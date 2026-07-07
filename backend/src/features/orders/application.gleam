@@ -15,4 +15,10 @@ pub type AcceptedOrder =
 pub type OrderStatus =
   command.OrderStatus
 
+pub type ConfirmOrder =
+  command.ConfirmOrder
+
+pub type CancelOrder =
+  command.CancelOrder
+
 pub const accept = command.accept

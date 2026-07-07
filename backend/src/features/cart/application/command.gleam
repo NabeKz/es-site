@@ -27,6 +27,10 @@ pub type UpdateCartItem =
 pub type DeleteCartItem =
   fn(Uuid) -> Result(Nil, String)
 
+/// 会員のカートを空にする（UC-6 手順6。注文確定後にワークフローが呼ぶ）。
+pub type ClearCart =
+  fn(Uuid) -> Result(Nil, String)
+
 pub type Create =
   fn(Uuid, ValidAddCartItemInput) -> Result(CartItem, String)
 

@@ -14,9 +14,9 @@ pub type OrderStatus {
 }
 
 /// 受け付けられた注文。受付時点では常に `Accepted`。確定・取消は注文処理ワークフローが
-/// 非同期で遷移させる。
+/// 非同期で遷移させる。`member_id` は確定後のカートクリアに使う。
 pub type AcceptedOrder {
-  AcceptedOrder(order: Order, status: OrderStatus)
+  AcceptedOrder(order: Order, member_id: Uuid, status: OrderStatus)
 }
 
 pub type FetchCartItems =
@@ -27,6 +27,14 @@ pub type SaveOrder =
 
 pub type Accept =
   fn(Uuid) -> Result(AcceptedOrder, String)
+
+/// 注文を確定する（UC-6 手順5）。`order_confirmations` への記録で表現する（db.md）。
+pub type ConfirmOrder =
+  fn(Uuid) -> Result(Nil, String)
+
+/// 注文を取り消す（UC-6 補償）。`order_cancellations` への記録で表現する（db.md）。
+pub type CancelOrder =
+  fn(Uuid) -> Result(Nil, String)
 
 /// 注文を受け付ける（UC-6 受付）。カートに商品があれば注文を「受付」状態で作成する。
 /// 在庫引き当て・決済・確定／補償は受付後にワークフローが非同期で行う（workflow.md）。
@@ -44,25 +52,9 @@ pub fn accept(fetch_items: FetchCartItems, save: SaveOrder) -> Accept {
           })
         let order = Order(id: uuid.v4(), items: order_items, total_price:)
         use saved <- result.map(save(member_id, order))
-        AcceptedOrder(order: saved, status: Accepted)
+        AcceptedOrder(order: saved, member_id:, status: Accepted)
       }
     }
-  }
-}
-
-/// 在庫引き当て（UC-6 手順4）。product 単位の不変条件 `available - requested >= 0`
-/// を守り、満たせば `stock_movements` に書く在庫変動（負の delta）を返す。
-///
-/// この関数は純粋なので「引き当てが直列化されている」前提でのみ正しい。売り越しの
-/// 実防衛は、外側で product_id 単位のアドバイザリロックにより引き当てを直列化して
-/// 担保する（Amazon 方式・在庫の確保は注文確定時の1箇所だけ）。
-pub fn allocate_stock(
-  available available: Int,
-  requested requested: Int,
-) -> Result(Int, String) {
-  case available >= requested {
-    True -> Ok(-requested)
-    False -> Error("insufficient stock")
   }
 }
 

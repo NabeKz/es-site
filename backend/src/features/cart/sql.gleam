@@ -29,6 +29,27 @@ WHERE id = $1
   |> pog.execute(db)
 }
 
+/// Runs the `delete_cart_items_by_member` query
+/// defined in `./src/features/cart/sql/delete_cart_items_by_member.sql`.
+///
+/// > 🐿️ This function was generated automatically using v4.6.0 of
+/// > the [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub fn delete_cart_items_by_member(
+  db: pog.Connection,
+  arg_1: Uuid,
+) -> Result(pog.Returned(Nil), pog.QueryError) {
+  let decoder = decode.map(decode.dynamic, fn(_) { Nil })
+
+  "DELETE FROM app.cart_items
+WHERE member_id = $1
+"
+  |> pog.query
+  |> pog.parameter(pog.text(uuid.to_string(arg_1)))
+  |> pog.returning(decoder)
+  |> pog.execute(db)
+}
+
 /// A row you get from running the `find_cart_item_by_member_product` query
 /// defined in `./src/features/cart/sql/find_cart_item_by_member_product.sql`.
 ///
