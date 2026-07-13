@@ -117,18 +117,15 @@ backend/src/
 │       ├── adaptor/
 │       │   └── rdb.gleam         # DB 実装。squirrel 生成関数を呼ぶ
 │       └── sql/                  # squirrel 用 SQL ファイル（1ファイル1クエリ）
+├── workflows/            # 複数集約をまたぐオーケストレーション
+├── domain/               # feature 間で共有するドメイン型
 ├── generated/            # 自動生成（編集禁止）
 └── shared/               # 共通ユーティリティ（date, env）
 ```
 
 ### 依存性注入パターン
 
-アダプターを関数型で注入する。`command.gleam` はアダプター関数を受け取って `Create` 関数を返す。ハンドラーの `new(db)` でアダプターを束縛してハンドラーを組み立てる。
-
-```gleam
-pub type CreateAdaptor = fn(Entity) -> Result(Entity, String)
-pub fn create(adaptor: CreateAdaptor) -> Create { ... }
-```
+アダプターを関数型で注入し、`compose.gleam`（コンポジションルート）で全フィーチャーを組み立てる。パターンの詳細は `.claude/rules/architecture.md` を参照。
 
 ### DB クエリ
 
@@ -146,6 +143,28 @@ frontend/src/
 スタイリングは Panda CSS。`routeTree.gen.ts` と `styled-system/` は自動生成。
 
 ## 設計思想
+
+### 在庫整合性は楽観（Amazon 方式）
+
+カートは在庫を見ない。引き当ては注文確定時の早い者勝ちで、排他も確定時にだけかける。
+判断の経緯と再検討の条件は `docs/adr/0001-stock-consistency.md`、実装方法（強整合/弱整合の使い分け）は `.claude/rules/consistency.md` を参照。
+
+### 複数集約をまたぐ更新は設計のシグナル
+
+ユースケースの実装で複数の集約を同時に更新する必要が生じたら、集約の境界が誤っている可能性を疑う。
+
+```
+# 例: 予約作成で reservations と lessons の両方を更新する必要があった
+# → remaining_slots をカラムとして持つ設計が誤りだったシグナル
+# → 動的に集計する設計に見直した
+```
+
+### 派生値は計算で求める
+
+集約をまたぐ更新を避けるため、他の集約から導出できる値はカラムとして持たず、クエリ時に計算する。
+
+- `remaining_slots = capacity - COUNT(reservations)` — `lessons` に持たない
+- 予約作成時に更新が必要なカラムは存在しない → 集約が独立して更新できる
 
 ### ページネーションより制約で絞る
 

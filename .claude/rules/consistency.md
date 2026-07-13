@@ -19,23 +19,6 @@ paths:
 | 単一集約 | handler → feature | 同期で返す |
 | 複数集約 | handler → feature（受付）→ workflow | 非同期処理 |
 
-## 複数集約をまたぐ更新は設計のシグナル
-
-ユースケースの実装で複数の集約を同時に更新する必要が生じたら、集約の境界が誤っている可能性を疑う。
-
-```
-# 例: 予約作成で reservations と lessons の両方を更新する必要があった
-# → remaining_slots をカラムとして持つ設計が誤りだったシグナル
-# → 動的に集計する設計に見直した
-```
-
-## 派生値は計算で求める
-
-集約をまたぐ更新を避けるため、他の集約から導出できる値はカラムとして持たず、クエリ時に計算する。
-
-- `remaining_slots = capacity - COUNT(reservations)` — `lessons` に持たない
-- 予約作成時に更新が必要なカラムは存在しない → 集約が独立して更新できる
-
 ## Workflow の役割
 
 複数集約をまたぐオーケストレーションを担う層。`features/` と並列に `workflows/` ディレクトリを置く。
@@ -63,19 +46,9 @@ features/ → 互いを知らない・自分のイベントを定義
 
 ## event_queue
 
-イベントのキューとして DB テーブルを一つ用意する。feature ごとに一時テーブルを作らず、全ワークフローで共有する。
+イベントは単一の DB テーブル `app.event_queue`（id, event_type, payload, created_at）に入れる。feature ごとに一時テーブルを作らない（決定の経緯と再検討条件は `docs/adr/0002-event-queue.md`）。
 
-```
-app.event_queue
-  id, event_type, payload, created_at
-```
-
-workflow は `event_queue` を polling して `event_type` で振り分ける。OTP のワーカープロセスと相性が良い。
-
-**メリット**
-- テーブルが一つで済む
-- スケールアウトしても構造が変わらない
-- レコードが残る限りリトライが自然に機能する
+workflow は `event_queue` を polling して `event_type` で振り分ける。
 
 ## イベントは状態変化に伴う
 

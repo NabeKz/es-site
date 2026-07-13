@@ -15,6 +15,8 @@ paths:
   - `query.gleam` — 読み取り系ユースケース（CQRS）
 - `features/<feature>/adaptor/` — DB などの具体的な実装
 - `features/<feature>/application.gleam` — フィーチャーの公開 API（再エクスポート）
+- `workflows/` — 複数集約をまたぐオーケストレーション（`consistency.md`）
+- `domain/` — feature 間で共有するドメイン型。feature 同士は互いを知らないため、共有する型はここに置く
 
 ## フィーチャーの追加
 
@@ -29,12 +31,17 @@ pub type CreateAdaptor = fn(Lesson) -> Result(Lesson, String)
 pub fn create(adaptor: CreateAdaptor) -> Create { ... }
 ```
 
-**組み立ては `backend.gleam` に集約する（コンポジションルート）。**
-`app/` 層は `pog.Connection` などのインフラ型を知ってはいけない。
+**組み立ては `compose.gleam` に集約する（コンポジションルート）。**
+`backend.gleam` は DB 接続を作って `compose.build` を呼ぶだけ。`app/` 層は `pog.Connection` などのインフラ型を知ってはいけない。
 
 ```gleam
-// backend.gleam
-conn |> rdb.create |> application.create |> lessons.new
+// compose.gleam
+pub fn build(conn: pog.Connection, pepper: String) -> handlers.Handlers {
+  handlers.Handlers(
+    products: products.new(products_app.create(products_rdb.save(conn))),
+    // ...
+  )
+}
 ```
 
 ## コード生成
