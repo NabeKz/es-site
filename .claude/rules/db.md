@@ -1,3 +1,9 @@
+---
+paths:
+  - "backend/db/**"
+  - "backend/src/features/**/sql/**"
+---
+
 # DB 設計方針
 
 ## NULL を使わない

@@ -1,3 +1,9 @@
+---
+paths:
+  - "backend/test/**"
+  - "backend/src/features/**"
+---
+
 # テスト方針
 
 ## ファイル構成
