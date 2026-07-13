@@ -1,3 +1,10 @@
+---
+paths:
+  - "backend/src/features/**"
+  - "backend/src/app/handlers/**"
+  - "backend/test/**"
+---
+
 # バリデーション方針
 
 ## Unvalidated → Validated の型変換

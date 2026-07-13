@@ -1,3 +1,8 @@
+---
+paths:
+  - "backend/**/*.gleam"
+---
+
 # Gleam コーディング規則
 
 ## 命名
