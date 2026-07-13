@@ -117,18 +117,15 @@ backend/src/
 │       ├── adaptor/
 │       │   └── rdb.gleam         # DB 実装。squirrel 生成関数を呼ぶ
 │       └── sql/                  # squirrel 用 SQL ファイル（1ファイル1クエリ）
+├── workflows/            # 複数集約をまたぐオーケストレーション
+├── domain/               # feature 間で共有するドメイン型
 ├── generated/            # 自動生成（編集禁止）
 └── shared/               # 共通ユーティリティ（date, env）
 ```
 
 ### 依存性注入パターン
 
-アダプターを関数型で注入する。`command.gleam` はアダプター関数を受け取って `Create` 関数を返す。ハンドラーの `new(db)` でアダプターを束縛してハンドラーを組み立てる。
-
-```gleam
-pub type CreateAdaptor = fn(Entity) -> Result(Entity, String)
-pub fn create(adaptor: CreateAdaptor) -> Create { ... }
-```
+アダプターを関数型で注入し、`compose.gleam`（コンポジションルート）で全フィーチャーを組み立てる。パターンの詳細は `.claude/rules/architecture.md` を参照。
 
 ### DB クエリ
 

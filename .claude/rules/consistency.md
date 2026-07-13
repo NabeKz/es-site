@@ -46,19 +46,9 @@ features/ → 互いを知らない・自分のイベントを定義
 
 ## event_queue
 
-イベントのキューとして DB テーブルを一つ用意する。feature ごとに一時テーブルを作らず、全ワークフローで共有する。
+イベントは単一の DB テーブル `app.event_queue`（id, event_type, payload, created_at）に入れる。feature ごとに一時テーブルを作らない（決定の経緯と再検討条件は `docs/adr/0002-event-queue.md`）。
 
-```
-app.event_queue
-  id, event_type, payload, created_at
-```
-
-workflow は `event_queue` を polling して `event_type` で振り分ける。OTP のワーカープロセスと相性が良い。
-
-**メリット**
-- テーブルが一つで済む
-- スケールアウトしても構造が変わらない
-- レコードが残る限りリトライが自然に機能する
+workflow は `event_queue` を polling して `event_type` で振り分ける。
 
 ## イベントは状態変化に伴う
 
