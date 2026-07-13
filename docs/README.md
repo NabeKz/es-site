@@ -37,6 +37,10 @@ flowchart TD
     rules -.governs.-> uc
     rules -.governs.-> api
     rules -.governs.-> schema
+
+    adr["adr/<br/>設計判断の記録 (ADR)<br/>(手書き)"]
+    adr -.governs.-> uc
+    adr -.governs.-> schema
 ```
 
 ## 一覧
@@ -53,6 +57,7 @@ flowchart TD
 | `aws-architecture.drawio(.svg)` | インフラ構成図 | 手書き（drawio） | — |
 | `aws-iam-cheatsheet.md` | AWS IAM 早見表 | 手書き | — |
 | `bruno/` | API 動作確認用コレクション（Bruno） | 手書き | `openapi.yaml` に追従 |
+| `adr/*.md` | 設計判断の記録（決定の経緯・再検討の条件） | 手書き | `usecase.md` / `schema.hcl` の設計を律する |
 | `.claude/rules/*.md` | 設計方針（集約・バリデーション・SQL・DB・テスト 等） | 手書き | 上記すべての書き方を律する |
 
 ## 編集のルール
