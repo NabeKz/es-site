@@ -18,7 +18,7 @@ tools: Read, Grep, Glob, Bash
 
 `docs/requirements.md` / `docs/usecase.md` / `docs/usecase.puml` / `docs/workflow.md` / `docs/openapi.yaml` / `docs/erd.md` / `docs/README.md`
 
-`docs/bruno/` などレビュー対象外のファイルは、地図（README）整合の観点でのみ触れる（中身の精査はしない）。
+レビュー対象外のファイル（`docs/aws-*` など）は、地図（README）整合の観点でのみ触れる（中身の精査はしない）。
 
 ## チェック項目
 
