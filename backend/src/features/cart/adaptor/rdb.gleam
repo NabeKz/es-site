@@ -1,4 +1,5 @@
 import features/cart/application/command
+import features/cart/application/query
 import features/cart/sql
 import generated/responses.{type CartItem, CartItem}
 import gleam/list
@@ -33,7 +34,9 @@ fn do_find_item_by_member_product(
   product_id: Uuid,
 ) -> Result(Option(CartItem), String) {
   use returned <- repo.query(
-    run: fn() { db |> sql.find_cart_item_by_member_product(member_id, product_id) },
+    run: fn() {
+      db |> sql.find_cart_item_by_member_product(member_id, product_id)
+    },
     on_error: "Failed to find cart item",
   )
   case returned.rows {
@@ -51,9 +54,7 @@ fn do_find_item_by_member_product(
   }
 }
 
-pub fn find_item_by_member_product(
-  db: pog.Connection,
-) -> command.FindCartItem {
+pub fn find_item_by_member_product(db: pog.Connection) -> command.FindCartItem {
   fn(member_id, product_id) {
     do_find_item_by_member_product(db, member_id, product_id)
   }
@@ -80,9 +81,7 @@ fn do_find_items_by_member(
   )
 }
 
-pub fn find_items_by_member(
-  db: pog.Connection,
-) -> fn(Uuid) -> Result(List(CartItem), String) {
+pub fn find_items_by_member(db: pog.Connection) -> query.GetCartItems {
   do_find_items_by_member(db, _)
 }
 
@@ -95,7 +94,10 @@ fn do_update_item(
     run: fn() { db |> sql.update_cart_item_quantity(id, quantity) },
     on_error: "Failed to update cart item",
   )
-  use row <- result.try(repo.first_row(returned, not_found: "cart item not found"))
+  use row <- result.try(repo.first_row(
+    returned,
+    not_found: "cart item not found",
+  ))
   Ok(CartItem(
     id: row.id,
     product_id: row.product_id,
