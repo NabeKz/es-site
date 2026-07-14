@@ -1,4 +1,8 @@
 import features/cart/application/command
+import features/cart/application/query
+
+pub type GetCartItems =
+  query.GetCartItems
 
 pub type SaveCartItem =
   command.SaveCartItem

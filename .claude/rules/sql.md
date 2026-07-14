@@ -23,6 +23,21 @@ paths:
   - 例: `create_lesson.sql`（description なし）と `create_lesson_with_description.sql`
 - ただし DB 設計方針（`db.md`）に従い NULL カラム自体を作らなければこの問題は発生しない
 
+## UPDATE は必要なカラムだけ SET する
+
+「入力に optional フィールドがある」×「SQL が全カラムを SET する」が揃うと、未指定のフィールドを NULL やゼロ値で上書きする事故が起きる。事故の成立には両方の条件が必要なので、どちらか一方を崩せば発生しない。
+
+```sql
+-- bad: 全カラム SET（未指定フィールドを上書きするリスク）
+UPDATE app.cart_items SET quantity = $2, note = $3 WHERE id = $1
+
+-- good: 更新したい関心のカラムだけ SET する
+UPDATE app.cart_items SET quantity = $2 WHERE id = $1
+```
+
+- 更新はカラム（関心）ごとに専用ユースケース + 専用 SQL に分ける（squirrel の1ファイル1クエリ構成が自然とこちらに誘導する）
+- 派生値をカラムに持たない設計（CLAUDE.md）なら、上書きで壊れる冗長データ自体が減り、この問題の面積も小さくなる
+
 ## スキーマ修飾
 
 - テーブルは `app` スキーマに定義する
