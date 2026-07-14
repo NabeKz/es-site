@@ -159,7 +159,7 @@ paths:
               $ref: "#/components/schemas/AddCartItemInput"
       responses:
         "201":
-          description: 追加したカートアイテム
+          description: 追加したカートの商品
           content:
             application/json:
               schema:
@@ -173,7 +173,7 @@ paths:
 
   /cart/items/{id}:
     patch:
-      summary: カートアイテムの数量変更
+      summary: カートの数量変更
       operationId: updateCartItem
       parameters:
         - name: id
@@ -190,7 +190,7 @@ paths:
               $ref: "#/components/schemas/UpdateCartItemInput"
       responses:
         "200":
-          description: 更新したカートアイテム
+          description: 更新したカートの商品
           content:
             application/json:
               schema:
@@ -198,7 +198,7 @@ paths:
         "401":
           description: 未認証
         "404":
-          description: カートアイテムが存在しない
+          description: カートの商品が存在しない
         "409":
           description: 在庫不足
     delete:
@@ -217,7 +217,7 @@ paths:
         "401":
           description: 未認証
         "404":
-          description: カートアイテムが存在しない
+          description: カートの商品が存在しない
 
   /orders:
     post:
