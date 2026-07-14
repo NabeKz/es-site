@@ -1,0 +1,18 @@
+meta {
+  name: Add Item
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/cart/items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "productId": "List Products で取得した id に差し替える",
+    "quantity": 1
+  }
+}

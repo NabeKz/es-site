@@ -19,6 +19,7 @@ tools: Read, Grep, Glob, Bash
 `docs/requirements.md` / `docs/usecase.md` / `docs/usecase.puml` / `docs/workflow.md` / `docs/openapi.yaml` / `docs/erd.md` / `docs/README.md`
 
 レビュー対象外のファイル（`docs/aws-*` など）は、地図（README）整合の観点でのみ触れる（中身の精査はしない）。
+`docs/bruno/` はエンドポイントの突き合わせ（チェック項目 4）のみ行い、ボディの中身までは精査しない。
 
 ## チェック項目
 
@@ -30,6 +31,7 @@ tools: Read, Grep, Glob, Bash
    - usecase の事後条件で触れるエンティティ ↔ erd のエンティティが存在するか
    - usecase のアクション ↔ openapi のエンドポイントが対応しているか
    - usecase.puml の UC 番号 ↔ usecase.md の UC が一致するか
+   - `docs/bruno/` のリクエスト（メソッド・パス）↔ openapi のエンドポイントが対応しているか（取りこぼし・残骸）
 5. **生成物の陳腐化**: `erd.md` は生成物。`backend/db/schema.hcl` と乖離していないか。⚠️ `mise run gen-erd` はローカル DB（port 5433）未起動だと `erd.md` を空に上書きして壊す。**DB 未起動環境では手読みでの突き合わせを既定**とし、再生成した場合は必ず `git diff docs/erd.md` で破損を確認し、壊れていたら `git checkout docs/erd.md` で復元する
 6. **地図の一致**: `docs/README.md` の一覧表・関係図が `docs/` の実ファイルと一致するか（新規 doc の載せ忘れ・削除済みの残骸）
 7. **集約をまたぐ強整合の検出（`consistency.md`）**: UC の事後条件・基本フローが、複数の集約（エンティティ）を 1 つの操作で同期完了させること＝**集約をまたぐ強整合**を暗黙に要求していないか。強整合は単一集約内の不変条件に限るのが原則で、集約をまたぐ更新は結果整合（workflow ＋補償）を疑う。該当したら「どの不変条件なら単一集約に収まるか／どこから結果整合に倒すべきか」を指摘する

@@ -1,0 +1,17 @@
+meta {
+  name: Update Item
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/cart/items/{{cartItemId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "quantity": 2
+  }
+}
