@@ -5,7 +5,11 @@ meta {
 }
 
 delete {
-  url: {{baseUrl}}/cart/items/{{cartItemId}}
+  url: {{baseUrl}}/cart/items/:id
   body: none
   auth: none
+}
+
+params:path {
+  id:
 }
