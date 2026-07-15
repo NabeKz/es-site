@@ -11,5 +11,5 @@ export const Route = createRootRoute({
 
 const wrapper = vstack({
   maxW: "breakpoint-lg",
-  margin: "0 auto",
+  marginInline: "auto",
 })
