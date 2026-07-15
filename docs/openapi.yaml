@@ -3,11 +3,16 @@ info:
   title: EC Site API
   version: "1.0.0"
 
+servers:
+  - url: http://localhost:8000
+    description: ローカル開発
+
 paths:
   /auth/signup:
     post:
       summary: 会員登録
       operationId: signup
+      security: []
       requestBody:
         required: true
         content:
@@ -25,6 +30,7 @@ paths:
     post:
       summary: ログイン
       operationId: login
+      security: []
       requestBody:
         required: true
         content:
@@ -38,10 +44,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Member"
+        "401":
+          description: 認証失敗
   /auth/logout:
     post:
       summary: ログアウト
       operationId: logout
+      security:
+        - memberSession: []
       responses:
         "204":
           description: ログアウト完了
@@ -49,6 +59,8 @@ paths:
     get:
       summary: 現在のログインユーザー取得
       operationId: getMe
+      security:
+        - memberSession: []
       responses:
         "200":
           description: ログイン中の会員
@@ -63,6 +75,7 @@ paths:
     get:
       summary: 商品一覧取得
       operationId: getProducts
+      security: []
       responses:
         "200":
           description: 商品一覧
@@ -77,6 +90,7 @@ paths:
     post:
       summary: 管理者ログイン
       operationId: adminLogin
+      security: []
       requestBody:
         required: true
         content:
@@ -96,6 +110,8 @@ paths:
     post:
       summary: 管理者ログアウト
       operationId: adminLogout
+      security:
+        - adminSession: []
       responses:
         "204":
           description: ログアウト完了
@@ -103,6 +119,8 @@ paths:
     get:
       summary: 現在のログイン管理者取得
       operationId: getAdminMe
+      security:
+        - adminSession: []
       responses:
         "200":
           description: ログイン中の管理者
@@ -117,6 +135,8 @@ paths:
     post:
       summary: 商品登録（管理者）
       operationId: createProduct
+      security:
+        - adminSession: []
       requestBody:
         required: true
         content:
@@ -137,6 +157,8 @@ paths:
     get:
       summary: カート取得
       operationId: getCartItems
+      security:
+        - memberSession: []
       responses:
         "200":
           description: カート内の商品一覧
@@ -151,6 +173,8 @@ paths:
     post:
       summary: カートに商品追加
       operationId: addCartItem
+      security:
+        - memberSession: []
       requestBody:
         required: true
         content:
@@ -175,6 +199,8 @@ paths:
     patch:
       summary: カートの数量変更
       operationId: updateCartItem
+      security:
+        - memberSession: []
       parameters:
         - name: id
           in: path
@@ -204,6 +230,8 @@ paths:
     delete:
       summary: カートから商品削除
       operationId: removeCartItem
+      security:
+        - memberSession: []
       parameters:
         - name: id
           in: path
@@ -224,6 +252,8 @@ paths:
       summary: 注文受付
       description: カートの内容で注文を受け付ける。在庫引き当て・決済・確定は非同期に行われる
       operationId: createOrder
+      security:
+        - memberSession: []
       responses:
         "202":
           description: 受け付けた注文
@@ -237,6 +267,18 @@ paths:
           description: カートが空
 
 components:
+  securitySchemes:
+    memberSession:
+      type: apiKey
+      in: cookie
+      name: session_token
+      description: 会員のセッション Cookie（ログインで発行）
+    adminSession:
+      type: apiKey
+      in: cookie
+      name: admin_session_token
+      description: 管理者のセッション Cookie（管理者ログインで発行）
+
   schemas:
     AuthInput:
       type: object

@@ -1,0 +1,11 @@
+extends:
+  - recommended
+
+rules:
+  # 個人プロジェクトのため license 記載は不要
+  info-license: off
+  # 4XX の網羅は求めない。ドメインとして意味のあるステータスだけを書く方針
+  # （バリデーション起因の 400 等を全操作に書くとノイズになる）
+  operation-4xx-response: off
+  # servers はローカル開発用の localhost を意図して書いている
+  no-server-example.com: off
