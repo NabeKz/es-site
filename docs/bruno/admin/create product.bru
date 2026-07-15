@@ -1,0 +1,20 @@
+meta {
+  name: Create Product
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/admin/products
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Gleam Sticker",
+    "price": 500,
+    "stock": 100,
+    "description": "Gleamのロゴステッカー"
+  }
+}
