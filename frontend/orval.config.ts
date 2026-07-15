@@ -1,7 +1,7 @@
 import { defineConfig } from "orval"
 
 export default defineConfig({
-  gymApp: {
+  ecSite: {
     input: "../docs/openapi.yaml",
     output: {
       baseUrl: "/api",
